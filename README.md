@@ -2,8 +2,8 @@
 Sending APNS notifications using the new HTTP 2 API with Jetty 9.3.6
 
 # Usage
-## Add Jetty's ALPN JAR to your boot classpath (download it from here[http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html])
-Add the following VM parameters to your run configuration:
+## Add Jetty's ALPN JAR to your boot classpath (download it from [here](http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html))
+Add the following VM parameter to your run configuration:
 ```
 -Xbootclasspath/p:<path_to_alpn_boot_jar>
 ```
