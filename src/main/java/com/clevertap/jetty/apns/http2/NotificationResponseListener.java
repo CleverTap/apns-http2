@@ -25,12 +25,24 @@
 package com.clevertap.jetty.apns.http2;
 
 /**
- * User: Jude Pereira
- * Date: 15/01/2016
- * Time: 22:57
+ * An interface for handling responses to notification requests.
  */
 public interface NotificationResponseListener {
+    /**
+     * Signals a successful notification.
+     * <p>
+     * Note: For a successful request, the response body is empty.
+     *
+     * @param notification The notification that succeeded
+     */
     void onSuccess(Notification notification);
 
+    /**
+     * Signals a failed notification.
+     *
+     * @param notification             The notification that failed
+     * @param notificationRequestError The response error (HTTP status code)
+     * @param responseContent          The body of the response
+     */
     void onFailure(Notification notification, NotificationRequestError notificationRequestError, String responseContent);
 }

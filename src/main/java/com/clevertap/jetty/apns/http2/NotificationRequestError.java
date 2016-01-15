@@ -28,9 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * User: Jude Pereira
- * Date: 15/01/2016
- * Time: 23:01
+ * A collection of all the HTTP status codes returned by Apple.
  */
 public enum NotificationRequestError {
     BadRequest(400), CertificateError(403), BadMethod(405), DeviceTokenInactiveForTopic(410),
