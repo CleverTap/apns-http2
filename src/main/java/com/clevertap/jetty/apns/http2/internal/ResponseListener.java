@@ -22,18 +22,22 @@
  * SOFTWARE.
  */
 
-package com.clevertap.jetty.apns.http2;
+package com.clevertap.jetty.apns.http2.internal;
 
+import com.clevertap.jetty.apns.http2.Notification;
+import com.clevertap.jetty.apns.http2.NotificationResponseListener;
+import com.clevertap.jetty.apns.http2.NotificationRequestError;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
 
 /**
- * User: Jude Pereira
- * Date: 15/01/2016
- * Time: 22:41
+ * A response listener for the request, based on the
+ * BufferingResponseListener class of Jetty.
+ * <p>
+ * Also see {@link NotificationResponseListener}.
  */
-final class ResponseListener extends BufferingResponseListener {
+public final class ResponseListener extends BufferingResponseListener {
     private final Notification notification;
     private final NotificationResponseListener nrl;
 
@@ -47,10 +51,12 @@ final class ResponseListener extends BufferingResponseListener {
         Response response = result.getResponse();
         final int status = response.getStatus();
 
-        if (status == 200) {
-            nrl.onSuccess(notification);
-        } else {
-            nrl.onFailure(notification, RequestError.get(status), getContentAsString());
+        if (nrl != null) {
+            if (status == 200) {
+                nrl.onSuccess(notification);
+            } else {
+                nrl.onFailure(notification, NotificationRequestError.get(status), getContentAsString());
+            }
         }
     }
 }

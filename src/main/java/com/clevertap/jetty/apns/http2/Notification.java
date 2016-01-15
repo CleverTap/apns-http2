@@ -30,27 +30,44 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 
 /**
- * User: Jude Pereira
- * Date: 15/01/2016
- * Time: 22:43
+ * An entity containing the payload and the token.
  */
 public class Notification {
     private final String payload;
     private final String token;
 
+    /**
+     * Constructs a new Notification with a payload and token.
+     *
+     * @param payload The JSON body (which is used for the request)
+     * @param token   The device token
+     */
     protected Notification(String payload, String token) {
         this.payload = payload;
         this.token = token;
     }
 
+    /**
+     * Retrieves the payload.
+     *
+     * @return The payload
+     */
     public String getPayload() {
         return payload;
     }
 
+    /**
+     * Retrieves the token.
+     *
+     * @return The device token
+     */
     public String getToken() {
         return token;
     }
 
+    /**
+     * Builds a notification to be sent to APNS.
+     */
     public static class Builder {
         private final ObjectMapper mapper = new ObjectMapper();
 
@@ -58,6 +75,11 @@ public class Notification {
         private final HashMap<String, Object> aps;
         private final String token;
 
+        /**
+         * Creates a new notification builder.
+         *
+         * @param token The device token
+         */
         public Builder(String token) {
             this.token = token;
             root = new HashMap<>();
@@ -65,6 +87,12 @@ public class Notification {
             root.put("aps", aps);
         }
 
+        /**
+         * Builds the notification.
+         * Also see {@link ApplePushClient#push(Notification, NotificationResponseListener)}
+         *
+         * @return The notification
+         */
         public Notification build() {
             final String payload;
             try {

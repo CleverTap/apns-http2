@@ -24,12 +24,32 @@
 
 package com.clevertap.jetty.apns.http2;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * User: Jude Pereira
  * Date: 15/01/2016
- * Time: 22:29
+ * Time: 23:01
  */
-public class Constants {
-    public static final String ENDPOINT_PRODUCTION = "https://api.push.apple.com";
-    public static final String ENDPOINT_SANDBOX = "https://api.development.push.apple.com";
+public enum NotificationRequestError {
+    BadRequest(400), CertificateError(403), BadMethod(405), DeviceTokenInactiveForTopic(410),
+    PayloadTooLarge(413), TooManyRequestsForToken(429), InternalServerError(500), ServerUnavailable(503);
+    public final int errorCode;
+
+    NotificationRequestError(int errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    private static Map<Integer, NotificationRequestError> errorMap = new HashMap<>();
+
+    static {
+        for (NotificationRequestError notificationRequestError : NotificationRequestError.values()) {
+            errorMap.put(notificationRequestError.errorCode, notificationRequestError);
+        }
+    }
+
+    public static NotificationRequestError get(int errorCode) {
+        return errorMap.get(errorCode);
+    }
 }

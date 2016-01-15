@@ -24,6 +24,8 @@
 
 package com.clevertap.jetty.apns.http2;
 
+import com.clevertap.jetty.apns.http2.internal.Constants;
+import com.clevertap.jetty.apns.http2.internal.ResponseListener;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
@@ -37,11 +39,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 /**
- * User: Jude Pereira
- * Date: 15/01/2016
- * Time: 21:58
+ * A wrapper around HttpClient to send out notifications using Apple's HTTP/2 API.
  */
 public class ApplePushClient {
     private static final Logger logger = LoggerFactory.getLogger(ApplePushClient.class);
@@ -51,14 +53,29 @@ public class ApplePushClient {
     private final String gateway;
     private NotificationResponseListener defaultNotificationListener;
 
+    /**
+     * Set a default notification response listener.
+     *
+     * @param listener The notification response listener
+     */
     public void setDefaultNotificationListener(NotificationResponseListener listener) {
         this.defaultNotificationListener = listener;
     }
 
+    /**
+     * Creates a new client and automatically loads the key store
+     * with the push certificate read from the input stream.
+     *
+     * @param certificate The client certificate to be used
+     * @param password    The password (if required, else null)
+     * @param production  Whether to use the production endpoint or the sandbox endpoint
+     */
     public ApplePushClient(InputStream certificate, String password, boolean production)
-            throws KeyStoreException, IOException {
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        password = password == null ? "" : password;
         SslContextFactory sslContext = new SslContextFactory(false);
         KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(certificate, password.toCharArray());
         sslContext.setKeyStore(ks);
         sslContext.setKeyStorePassword(password);
         client = new HttpClient(new HttpClientTransportOverHTTP2(new HTTP2Client()), sslContext);
@@ -74,27 +91,42 @@ public class ApplePushClient {
             gateway = Constants.ENDPOINT_SANDBOX;
         }
 
+        setMaxConnections(1);
+        setMaxRequestsQueued(1000);
+
         logger.debug("HTTP/2 client started...");
     }
 
-    public ApplePushClient(HttpClient httpClient, boolean production) {
-        this.client = httpClient;
-
-        if (production) {
-            gateway = Constants.ENDPOINT_PRODUCTION;
-        } else {
-            gateway = Constants.ENDPOINT_SANDBOX;
-        }
-    }
-
+    /**
+     * Sets the underlying HttpClient's maximum connections per destination.
+     * Generally, one connection can handle up to 2000 push notifications per second.
+     * <p>
+     * Default is 1.
+     *
+     * @param maxConnections The number of connections to keep open
+     */
     public void setMaxConnections(int maxConnections) {
         client.setMaxConnectionsPerDestination(maxConnections);
     }
 
+    /**
+     * Sets the underlying HttpClient's maximum requests to be queued.
+     * <p>
+     * Default is 1000;
+     *
+     * @param maxRequestsQueued The number of queued requests
+     */
     public void setMaxRequestsQueued(int maxRequestsQueued) {
         client.setMaxRequestsQueuedPerDestination(maxRequestsQueued);
     }
 
+    /**
+     * Sends a notification to the Apple Push Notification Service.
+     *
+     * @param notification The notification built using
+     *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
+     * @param listener     The listener to be called after the request is complete
+     */
     public void push(Notification notification, NotificationResponseListener listener) {
         Request req = client.POST(gateway)
                 .path("/3/device/" + notification.getToken())
@@ -103,6 +135,14 @@ public class ApplePushClient {
         req.send(new ResponseListener(notification, listener));
     }
 
+    /**
+     * Sends a notification to the Apple Push Notification Service.
+     * <p>
+     * The default notification listener, if set, will be called after the request is complete
+     *
+     * @param notification The notification built using
+     *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
+     */
     public void push(Notification notification) {
         push(notification, defaultNotificationListener);
     }

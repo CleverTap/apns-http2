@@ -32,5 +32,5 @@ package com.clevertap.jetty.apns.http2;
 public interface NotificationResponseListener {
     void onSuccess(Notification notification);
 
-    void onFailure(Notification notification, RequestError requestError, String responseContent);
+    void onFailure(Notification notification, NotificationRequestError notificationRequestError, String responseContent);
 }

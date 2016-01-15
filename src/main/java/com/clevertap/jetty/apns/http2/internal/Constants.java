@@ -22,34 +22,12 @@
  * SOFTWARE.
  */
 
-package com.clevertap.jetty.apns.http2;
-
-import java.util.HashMap;
-import java.util.Map;
+package com.clevertap.jetty.apns.http2.internal;
 
 /**
- * User: Jude Pereira
- * Date: 15/01/2016
- * Time: 23:01
+ * Internal constants used by this library.
  */
-public enum RequestError {
-    BadRequest(400), CertificateError(403), BadMethod(405), DeviceTokenInactiveForTopic(410),
-    PayloadTooLarge(413), TooManyRequestsForToken(429), InternalServerError(500), ServerUnavailable(503);
-    public final int errorCode;
-
-    RequestError(int errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    private static Map<Integer, RequestError> errorMap = new HashMap<>();
-
-    static {
-        for (RequestError requestError : RequestError.values()) {
-            errorMap.put(requestError.errorCode, requestError);
-        }
-    }
-
-    public static RequestError get(int errorCode) {
-        return errorMap.get(errorCode);
-    }
+public class Constants {
+    public static final String ENDPOINT_PRODUCTION = "https://api.push.apple.com";
+    public static final String ENDPOINT_SANDBOX = "https://api.development.push.apple.com";
 }
