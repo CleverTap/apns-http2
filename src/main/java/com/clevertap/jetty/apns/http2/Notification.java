@@ -121,7 +121,7 @@ public class Notification {
             return this;
         }
 
-        public Builder customField(String key, String value) {
+        public Builder customField(String key, Object value) {
             root.put(key, value);
             return this;
         }
