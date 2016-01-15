@@ -161,4 +161,8 @@ public class ApplePushClient {
     public void push(Notification notification) {
         push(notification, defaultNotificationListener);
     }
+
+    public void shutdown() throws Exception {
+        client.stop();
+    }
 }
