@@ -136,7 +136,11 @@ public class ApplePushClient {
      *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
      * @param listener     The listener to be called after the request is complete
      */
-    public final void push(Notification notification, NotificationResponseListener listener) {
+    public void push(Notification notification, NotificationResponseListener listener) {
+        _push(notification, listener);
+    }
+
+    private void _push(Notification notification, NotificationResponseListener listener) {
         Request req = client.POST(gateway)
                 .path("/3/device/" + notification.getToken())
                 .content(new StringContentProvider(notification.getPayload()));
