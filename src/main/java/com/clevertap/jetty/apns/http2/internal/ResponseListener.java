@@ -31,6 +31,8 @@ import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
 
+import java.util.concurrent.Semaphore;
+
 /**
  * A response listener for the request, based on the
  * BufferingResponseListener class of Jetty.
@@ -38,16 +40,19 @@ import org.eclipse.jetty.client.util.BufferingResponseListener;
  * Also see {@link NotificationResponseListener}.
  */
 public final class ResponseListener extends BufferingResponseListener {
+    private final Semaphore semaphore;
     private final Notification notification;
     private final NotificationResponseListener nrl;
 
-    public ResponseListener(Notification notification, NotificationResponseListener nrl) {
+    public ResponseListener(Semaphore semaphore, Notification notification, NotificationResponseListener nrl) {
+        this.semaphore = semaphore;
         this.notification = notification;
         this.nrl = nrl;
     }
 
     @Override
     public void onComplete(Result result) {
+        semaphore.release();
         Response response = result.getResponse();
         final int status = response.getStatus();
 

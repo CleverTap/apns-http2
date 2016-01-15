@@ -41,6 +41,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.Semaphore;
 
 /**
  * A wrapper around HttpClient to send out notifications using Apple's HTTP/2 API.
@@ -52,6 +53,12 @@ public class ApplePushClient {
 
     private final String gateway;
     private NotificationResponseListener defaultNotificationListener;
+
+    /**
+     * This semaphore is used as we cannot tell whether Jetty's internal queue is full or not.
+     * Hopefully, this will change in the future.
+     */
+    private final Semaphore semaphore;
 
     /**
      * Set a default notification response listener.
@@ -70,7 +77,7 @@ public class ApplePushClient {
      * @param password    The password (if required, else null)
      * @param production  Whether to use the production endpoint or the sandbox endpoint
      */
-    public ApplePushClient(InputStream certificate, String password, boolean production)
+    public ApplePushClient(InputStream certificate, String password, boolean production, int maxRequestsQueued)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         password = password == null ? "" : password;
         SslContextFactory sslContext = new SslContextFactory(false);
@@ -79,6 +86,7 @@ public class ApplePushClient {
         sslContext.setKeyStore(ks);
         sslContext.setKeyStorePassword(password);
         client = new HttpClient(new HttpClientTransportOverHTTP2(new HTTP2Client()), sslContext);
+
         try {
             client.start();
         } catch (Exception e) {
@@ -92,9 +100,21 @@ public class ApplePushClient {
         }
 
         setMaxConnections(1);
-        setMaxRequestsQueued(1000);
+        semaphore = new Semaphore(maxRequestsQueued);
 
         logger.debug("HTTP/2 client started...");
+    }
+
+    /**
+     * Creates a new client and automatically loads the key store
+     * with the push certificate read from the input stream.
+     * <p>
+     * Same as calling {@link ApplePushClient#ApplePushClient(InputStream, String, boolean, int)}
+     * with maximum queued requests as 1000.
+     */
+    public ApplePushClient(InputStream certificate, String password, boolean production)
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        this(certificate, password, production, 1000);
     }
 
     /**
@@ -110,29 +130,24 @@ public class ApplePushClient {
     }
 
     /**
-     * Sets the underlying HttpClient's maximum requests to be queued.
-     * <p>
-     * Default is 1000;
-     *
-     * @param maxRequestsQueued The number of queued requests
-     */
-    public void setMaxRequestsQueued(int maxRequestsQueued) {
-        client.setMaxRequestsQueuedPerDestination(maxRequestsQueued);
-    }
-
-    /**
      * Sends a notification to the Apple Push Notification Service.
      *
      * @param notification The notification built using
      *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
      * @param listener     The listener to be called after the request is complete
      */
-    public void push(Notification notification, NotificationResponseListener listener) {
+    public final void push(Notification notification, NotificationResponseListener listener) {
         Request req = client.POST(gateway)
                 .path("/3/device/" + notification.getToken())
                 .content(new StringContentProvider(notification.getPayload()));
 
-        req.send(new ResponseListener(notification, listener));
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            // Not happening
+            logger.error("Interrupted while trying to acquire a permit", e);
+        }
+        req.send(new ResponseListener(semaphore, notification, listener));
     }
 
     /**
