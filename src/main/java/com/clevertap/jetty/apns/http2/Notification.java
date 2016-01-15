@@ -27,6 +27,7 @@ package com.clevertap.jetty.apns.http2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
 /**
@@ -71,8 +72,7 @@ public class Notification {
     public static class Builder {
         private final ObjectMapper mapper = new ObjectMapper();
 
-        private final HashMap<String, Object> root;
-        private final HashMap<String, Object> aps;
+        private final HashMap<String, Object> root, aps, alert;
         private final String token;
 
         /**
@@ -84,7 +84,54 @@ public class Notification {
             this.token = token;
             root = new HashMap<>();
             aps = new HashMap<>();
-            root.put("aps", aps);
+            alert = new HashMap<>();
+        }
+
+        public Builder alertBody(String body) {
+            alert.put("body", body);
+            return this;
+        }
+
+        public Builder alertTitle(String title) {
+            alert.put("title", title);
+            return this;
+        }
+
+        public Builder sound(String sound) {
+            if (sound != null) {
+                aps.put("sound", sound);
+            } else {
+                aps.remove("sound");
+            }
+
+            return this;
+        }
+
+        public Builder category(String category) {
+            if (category != null) {
+                aps.put("category", category);
+            } else {
+                aps.remove("category");
+            }
+            return this;
+        }
+
+        public Builder badge(int badge) {
+            aps.put("badge", badge);
+            return this;
+        }
+
+        public Builder customField(String key, String value) {
+            root.put(key, value);
+            return this;
+        }
+
+        public int size() {
+            try {
+                return build().getPayload().getBytes("UTF-8").length;
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         /**
@@ -94,6 +141,8 @@ public class Notification {
          * @return The notification
          */
         public Notification build() {
+            root.put("aps", aps);
+            aps.put("alert", alert);
             final String payload;
             try {
                 payload = mapper.writeValueAsString(root);
