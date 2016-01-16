@@ -80,6 +80,8 @@ public class AsyncApnsClient implements ApnsClient {
         sslContext.setKeyStorePassword(password);
         client = new HttpClient(new HttpClientTransportOverHTTP2(new HTTP2Client()), sslContext);
 
+        setMaxConnections(1);
+        client.setMaxRequestsQueuedPerDestination(maxRequestsQueued);
         try {
             client.start();
         } catch (Exception e) {
@@ -92,7 +94,6 @@ public class AsyncApnsClient implements ApnsClient {
             gateway = Constants.ENDPOINT_SANDBOX;
         }
 
-        setMaxConnections(1);
         semaphore = new Semaphore(maxRequestsQueued);
 
         logger.debug("HTTP/2 client started...");
