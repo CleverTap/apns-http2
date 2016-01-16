@@ -25,8 +25,8 @@
 package com.clevertap.jetty.apns.http2.internal;
 
 import com.clevertap.jetty.apns.http2.Notification;
-import com.clevertap.jetty.apns.http2.NotificationResponseListener;
 import com.clevertap.jetty.apns.http2.NotificationRequestError;
+import com.clevertap.jetty.apns.http2.NotificationResponseListener;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
@@ -53,10 +53,10 @@ public final class ResponseListener extends BufferingResponseListener {
     @Override
     public void onComplete(Result result) {
         semaphore.release();
-        Response response = result.getResponse();
-        final int status = response.getStatus();
 
         if (nrl != null) {
+            Response response = result.getResponse();
+            int status = response.getStatus();
             if (status == 200) {
                 nrl.onSuccess(notification);
             } else {
