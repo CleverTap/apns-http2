@@ -103,11 +103,11 @@ public class AsyncApnsClient implements ApnsClient {
      * with the push certificate read from the input stream.
      * <p>
      * Same as calling {@link AsyncApnsClient#AsyncApnsClient(InputStream, String, boolean, int)}
-     * with maximum queued requests as 1000.
+     * with maximum queued requests as 2000.
      */
     public AsyncApnsClient(InputStream certificate, String password, boolean production)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        this(certificate, password, production, 1000);
+        this(certificate, password, production, 2000);
     }
 
     /**
@@ -138,12 +138,8 @@ public class AsyncApnsClient implements ApnsClient {
                 .path("/3/device/" + notification.getToken())
                 .content(new StringContentProvider(notification.getPayload()));
 
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            // Not happening
-            logger.error("Interrupted while trying to acquire a permit", e);
-        }
+        semaphore.acquireUninterruptibly();
+
         req.send(new ResponseListener(semaphore, notification, listener));
     }
 
