@@ -24,6 +24,7 @@
 
 package com.clevertap.jetty.apns.http2;
 
+import com.clevertap.jetty.apns.http2.clients.AsyncApnsClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -136,7 +137,7 @@ public class Notification {
 
         /**
          * Builds the notification.
-         * Also see {@link ApplePushClient#push(Notification, NotificationResponseListener)}
+         * Also see {@link AsyncApnsClient#push(Notification, NotificationResponseListener)}
          *
          * @return The notification
          */

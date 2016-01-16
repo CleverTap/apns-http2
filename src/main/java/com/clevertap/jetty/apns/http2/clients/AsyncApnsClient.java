@@ -22,8 +22,11 @@
  * SOFTWARE.
  */
 
-package com.clevertap.jetty.apns.http2;
+package com.clevertap.jetty.apns.http2.clients;
 
+import com.clevertap.jetty.apns.http2.ApnsClient;
+import com.clevertap.jetty.apns.http2.Notification;
+import com.clevertap.jetty.apns.http2.NotificationResponseListener;
 import com.clevertap.jetty.apns.http2.internal.Constants;
 import com.clevertap.jetty.apns.http2.internal.ResponseListener;
 import org.eclipse.jetty.client.HttpClient;
@@ -44,30 +47,20 @@ import java.security.cert.CertificateException;
 import java.util.concurrent.Semaphore;
 
 /**
- * A wrapper around HttpClient to send out notifications using Apple's HTTP/2 API.
+ * A wrapper around Jetty's HttpClient to send out notifications using Apple's HTTP/2 API.
  */
-public class ApplePushClient {
-    private static final Logger logger = LoggerFactory.getLogger(ApplePushClient.class);
+public class AsyncApnsClient implements ApnsClient {
+    private static final Logger logger = LoggerFactory.getLogger(AsyncApnsClient.class);
 
     protected final HttpClient client;
 
-    private final String gateway;
-    private NotificationResponseListener defaultNotificationListener;
+    protected final String gateway;
 
     /**
      * This semaphore is used as we cannot tell whether Jetty's internal queue is full or not.
      * Hopefully, this will change in the future.
      */
     private final Semaphore semaphore;
-
-    /**
-     * Set a default notification response listener.
-     *
-     * @param listener The notification response listener
-     */
-    public void setDefaultNotificationListener(NotificationResponseListener listener) {
-        this.defaultNotificationListener = listener;
-    }
 
     /**
      * Creates a new client and automatically loads the key store
@@ -77,7 +70,7 @@ public class ApplePushClient {
      * @param password    The password (if required, else null)
      * @param production  Whether to use the production endpoint or the sandbox endpoint
      */
-    public ApplePushClient(InputStream certificate, String password, boolean production, int maxRequestsQueued)
+    public AsyncApnsClient(InputStream certificate, String password, boolean production, int maxRequestsQueued)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         password = password == null ? "" : password;
         SslContextFactory sslContext = new SslContextFactory(false);
@@ -109,10 +102,10 @@ public class ApplePushClient {
      * Creates a new client and automatically loads the key store
      * with the push certificate read from the input stream.
      * <p>
-     * Same as calling {@link ApplePushClient#ApplePushClient(InputStream, String, boolean, int)}
+     * Same as calling {@link AsyncApnsClient#AsyncApnsClient(InputStream, String, boolean, int)}
      * with maximum queued requests as 1000.
      */
-    public ApplePushClient(InputStream certificate, String password, boolean production)
+    public AsyncApnsClient(InputStream certificate, String password, boolean production)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         this(certificate, password, production, 1000);
     }
@@ -152,18 +145,6 @@ public class ApplePushClient {
             logger.error("Interrupted while trying to acquire a permit", e);
         }
         req.send(new ResponseListener(semaphore, notification, listener));
-    }
-
-    /**
-     * Sends a notification to the Apple Push Notification Service.
-     * <p>
-     * The default notification listener, if set, will be called after the request is complete
-     *
-     * @param notification The notification built using
-     *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
-     */
-    public void push(Notification notification) {
-        push(notification, defaultNotificationListener);
     }
 
     public void shutdown() throws Exception {
