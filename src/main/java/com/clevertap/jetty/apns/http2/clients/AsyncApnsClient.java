@@ -112,6 +112,15 @@ public class AsyncApnsClient implements ApnsClient {
     }
 
     /**
+     * Returns the underlying HTTP client.
+     *
+     * @return The HttpClient instance to send messages
+     */
+    public HttpClient getHttpClient() {
+        return client;
+    }
+
+    /**
      * Sets the underlying HttpClient's maximum connections per destination.
      * Generally, one connection can handle up to 2000 push notifications per second.
      * <p>
