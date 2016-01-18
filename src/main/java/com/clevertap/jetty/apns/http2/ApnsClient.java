@@ -24,6 +24,8 @@
 
 package com.clevertap.jetty.apns.http2;
 
+import java.io.IOException;
+
 /**
  * Interface for for general purpose APNS client.
  */
@@ -37,5 +39,17 @@ public interface ApnsClient {
      */
     void push(Notification notification, NotificationResponseListener listener);
 
+    /**
+     * Starts the client.
+     *
+     * @throws IOException If any error occurs
+     */
+    void start() throws IOException;
+
+    /**
+     * Stops the client.
+     *
+     * @throws Exception If any error occurs
+     */
     void shutdown() throws Exception;
 }

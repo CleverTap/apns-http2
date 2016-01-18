@@ -83,11 +83,6 @@ public class AsyncApnsClient implements ApnsClient {
 
         setMaxConnections(1);
         client.setMaxRequestsQueuedPerDestination(maxRequestsQueued);
-        try {
-            client.start();
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
 
         if (production) {
             gateway = Constants.ENDPOINT_PRODUCTION;
@@ -98,6 +93,19 @@ public class AsyncApnsClient implements ApnsClient {
         semaphore = new Semaphore(maxRequestsQueued);
 
         logger.debug("HTTP/2 client started...");
+    }
+
+    /**
+     * Starts the HTTP client for pushing messages.
+     *
+     * @throws IOException When an error occurs
+     */
+    public void start() throws IOException {
+        try {
+            client.start();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     /**
