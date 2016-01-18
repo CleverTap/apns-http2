@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -146,7 +147,7 @@ public class AsyncApnsClient implements ApnsClient {
     private void _push(Notification notification, NotificationResponseListener listener) {
         Request req = client.POST(gateway)
                 .path("/3/device/" + notification.getToken())
-                .content(new StringContentProvider(notification.getPayload()));
+                .content(new StringContentProvider(notification.getPayload(), Charset.forName("UTF-8")));
 
         semaphore.acquireUninterruptibly();
 
