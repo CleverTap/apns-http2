@@ -51,6 +51,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -83,6 +85,12 @@ public class AsyncApnsClient implements ApnsClient {
         SslContextFactory sslContext = new SslContextFactory(false);
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(certificate, password.toCharArray());
+
+        // Test our certificate
+        if (((X509Certificate) ks.getCertificate(ks.aliases().nextElement())).getNotAfter().before(new Date())) {
+            throw new CertificateException("Certificate expired");
+        }
+
         sslContext.setKeyStore(ks);
         sslContext.setKeyStorePassword(password);
         client = new HttpClient(new HttpClientTransportOverHTTP2(new HTTP2Client()), sslContext);
@@ -161,6 +169,7 @@ public class AsyncApnsClient implements ApnsClient {
     private void _push(Notification notification, NotificationResponseListener listener) {
         Request req = client.POST(gateway)
                 .path("/3/device/" + notification.getToken())
+                .header("content-length", notification.getPayload().getBytes(Charset.forName("UTF-8")).length + "")
                 .content(new StringContentProvider(notification.getPayload(), Charset.forName("UTF-8")));
 
         semaphore.acquireUninterruptibly();
