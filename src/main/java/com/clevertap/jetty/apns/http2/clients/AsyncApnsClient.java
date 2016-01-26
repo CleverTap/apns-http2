@@ -72,8 +72,9 @@ public class AsyncApnsClient implements ApnsClient {
      * @param certificate The client certificate to be used
      * @param password    The password (if required, else null)
      * @param production  Whether to use the production endpoint or the sandbox endpoint
+     * @param semaphore   A semaphore used to control the notifications queued
      */
-    public AsyncApnsClient(InputStream certificate, String password, boolean production, int maxRequestsQueued)
+    public AsyncApnsClient(InputStream certificate, String password, boolean production, int maxRequestsQueued, Semaphore semaphore)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         this.client = Utils.buildClient(certificate, password);
 
@@ -86,7 +87,7 @@ public class AsyncApnsClient implements ApnsClient {
             gateway = Constants.ENDPOINT_SANDBOX;
         }
 
-        semaphore = new Semaphore(maxRequestsQueued);
+        this.semaphore = semaphore;
     }
 
     public void start() throws IOException {

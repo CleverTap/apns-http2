@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.Semaphore;
 
 /**
  * A builder to build an APNS client.
@@ -48,6 +49,7 @@ public class ApnsClientBuilder {
 
     private boolean asynchronous = false;
     private int maxQueuedNotifications = 2000;
+    private Semaphore semaphore;
 
     public ApnsClientBuilder withCertificate(InputStream inputStream) {
         certificate = inputStream;
@@ -85,6 +87,11 @@ public class ApnsClientBuilder {
         return this;
     }
 
+    public ApnsClientBuilder withSemaphore(Semaphore semaphore) {
+        this.semaphore = semaphore;
+        return this;
+    }
+
     public ApnsClientBuilder withMaxQueuedNotifications(int maxQueuedNotifications) {
         this.maxQueuedNotifications = maxQueuedNotifications;
         return this;
@@ -96,8 +103,12 @@ public class ApnsClientBuilder {
         if (certificate == null) throw new CertificateException("Certificate cannot be null");
 
         if (asynchronous) {
+            if (semaphore == null) {
+                semaphore = new Semaphore(maxQueuedNotifications);
+            }
+
             return new AsyncApnsClient(certificate, password,
-                    production, maxQueuedNotifications);
+                    production, maxQueuedNotifications, semaphore);
         } else {
             return new SyncApnsClient(certificate, password, production);
         }
