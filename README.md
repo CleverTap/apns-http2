@@ -7,23 +7,38 @@ A Java library for sending notifications via APNS using Apple's new HTTP/2 API. 
 - Clone this repository, and add it as a dependent maven project
 
 ## Usage
+
 ### Create an instance of the client using your certificate
+
 ```
 FileInputStream cert = new FileInputStream("/path/to/certificate.p12");
-final AsyncApnsClient client = new AsyncApnsClient(cert, "", true);
+final ApnsClient client = new ApnsClientBuilder()
+                .withProductionGateway()
+                .inAsynchronousMode()
+                .withCertificate(cert)
+                .withPassword("")
+                .build();
 ```
+
 ### Start the client
+
 ```
 client.start();
 ```
+
 ### Use Notification.Builder to build your notification
 The notification builder supports several other features (such as badge, category, etc). The minimal is shown below:
+
 ```
 Notification n = new Notification.Builder("my token")
         .alertBody("Hello").build();
 
 ```
+
 ### Send the notification
+
+#### Asynchronous
+ 
 ```
 client.push(n, new NotificationResponseListener() {
     @Override
@@ -37,6 +52,13 @@ client.push(n, new NotificationResponseListener() {
         System.out.println("content: " + responseContent);
     }
 });
+```
+
+#### Synchronous
+
+```
+NotificationResponse result = client.push(n);
+System.out.println(result);
 ```
 
 ## License

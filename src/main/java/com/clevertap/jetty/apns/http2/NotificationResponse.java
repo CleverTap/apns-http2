@@ -30,63 +30,53 @@
 
 package com.clevertap.jetty.apns.http2;
 
-import org.eclipse.jetty.client.HttpClient;
-
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
 /**
- * Interface for general purpose APNS clients.
+ * A wrapper around possible responses from the push gateway.
  */
-public interface ApnsClient {
+public class NotificationResponse {
+    private final NotificationRequestError error;
+    private final int httpStatusCode;
+    private final String responseBody;
+
+    public NotificationResponse(NotificationRequestError error, int httpStatusCode, String responseBody) {
+        this.error = error;
+        this.httpStatusCode = httpStatusCode;
+        this.responseBody = responseBody;
+    }
 
     /**
-     * Checks whether the client supports synchronous operations.
-     * <p>
-     * This is specified when building the client using
+     * Returns the error.
      *
-     * @return Whether the client supports synchronous operations
+     * @return The error (null if no error)
      */
-    boolean isSynchronous();
-
-
-    /**
-     * Returns the underlying HTTP client.
-     *
-     * @return The HttpClient instance to send messages
-     */
-    HttpClient getHttpClient();
+    public NotificationRequestError getError() {
+        return error;
+    }
 
     /**
-     * Sends a notification asynchronously to the Apple Push Notification Service.
+     * Returns the real HTTP status code.
      *
-     * @param notification The notification built using
-     *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
-     * @param listener     The listener to be called after the request is complete
+     * @return The HTTP status code
      */
-    void push(Notification notification, NotificationResponseListener listener);
+    public int getHttpStatusCode() {
+        return httpStatusCode;
+    }
 
     /**
-     * Sends a notification synchronously to the Apple Push Notification Service.
+     * Returns the content body (null for a successful response).
      *
-     * @param notification The notification built using
-     *                     {@link Notification.Builder}
-     * @return The notification response
+     * @return The content body (null for a successful response)
      */
-    NotificationResponse push(Notification notification) throws InterruptedException, ExecutionException, TimeoutException;
+    public String getResponseBody() {
+        return responseBody;
+    }
 
-    /**
-     * Starts the HTTP client for pushing messages.
-     *
-     * @throws IOException When an error occurs
-     */
-    void start() throws IOException;
-
-    /**
-     * Stops the client.
-     *
-     * @throws Exception If any error occurs
-     */
-    void shutdown() throws Exception;
+    @Override
+    public String toString() {
+        return "NotificationResponse{" +
+                "error=" + error +
+                ", httpStatusCode=" + httpStatusCode +
+                ", responseBody='" + responseBody + '\'' +
+                '}';
+    }
 }

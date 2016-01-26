@@ -30,14 +30,11 @@
 
 package com.clevertap.jetty.apns.http2.clients;
 
-import com.clevertap.jetty.apns.http2.ApnsClient;
-import com.clevertap.jetty.apns.http2.Notification;
-import com.clevertap.jetty.apns.http2.NotificationResponse;
-import com.clevertap.jetty.apns.http2.NotificationResponseListener;
+import com.clevertap.jetty.apns.http2.*;
 import com.clevertap.jetty.apns.http2.internal.Constants;
-import com.clevertap.jetty.apns.http2.internal.ResponseListener;
 import com.clevertap.jetty.apns.http2.internal.Utils;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,23 +44,17 @@ import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A wrapper around Jetty's HttpClient to send out notifications using Apple's HTTP/2 API.
  */
-public class AsyncApnsClient implements ApnsClient {
-    private static final Logger logger = LoggerFactory.getLogger(AsyncApnsClient.class);
-
+public class SyncApnsClient implements ApnsClient {
+    private static final Logger logger = LoggerFactory.getLogger(SyncApnsClient.class);
     protected final HttpClient client;
 
     protected final String gateway;
-
-    /**
-     * This semaphore is used as we cannot tell whether Jetty's internal queue is full or not.
-     * Hopefully, this will change in the future.
-     */
-    private final Semaphore semaphore;
 
     /**
      * Creates a new client and automatically loads the key store
@@ -73,20 +64,48 @@ public class AsyncApnsClient implements ApnsClient {
      * @param password    The password (if required, else null)
      * @param production  Whether to use the production endpoint or the sandbox endpoint
      */
-    public AsyncApnsClient(InputStream certificate, String password, boolean production, int maxRequestsQueued)
-            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        this.client = Utils.buildClient(certificate, password);
-
-        setMaxConnections(1);
-        client.setMaxRequestsQueuedPerDestination(maxRequestsQueued);
+    public SyncApnsClient(InputStream certificate, String password, boolean production)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        client = Utils.buildClient(certificate, password);
 
         if (production) {
             gateway = Constants.ENDPOINT_PRODUCTION;
         } else {
             gateway = Constants.ENDPOINT_SANDBOX;
         }
+    }
 
-        semaphore = new Semaphore(maxRequestsQueued);
+    public boolean isSynchronous() {
+        return true;
+    }
+
+    @Override
+    public HttpClient getHttpClient() {
+        return client;
+    }
+
+    public void push(Notification notification, NotificationResponseListener listener) {
+        throw new UnsupportedOperationException("Asynchronous requests are not supported by this client");
+    }
+
+    public NotificationResponse push(Notification notification)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        Request req = Utils.buildRequest(client, notification, gateway);
+        ContentResponse cr = req.send();
+
+        final int statusCode = cr.getStatus();
+        final NotificationRequestError error;
+        final String contentBody;
+
+        if (statusCode != 200) {
+            error = NotificationRequestError.get(statusCode);
+            contentBody = cr.getContentAsString();
+        } else {
+            error = null;
+            contentBody = null;
+        }
+
+        return new NotificationResponse(error, statusCode, contentBody);
     }
 
     public void start() throws IOException {
@@ -96,49 +115,6 @@ public class AsyncApnsClient implements ApnsClient {
         } catch (Exception e) {
             throw new IOException(e);
         }
-    }
-
-    public HttpClient getHttpClient() {
-        return client;
-    }
-
-    /**
-     * Sets the underlying HttpClient's maximum connections per destination.
-     * Generally, one connection can handle up to 2000 push notifications per second.
-     * <p>
-     * Default is 1.
-     *
-     * @param maxConnections The number of connections to keep open
-     */
-    public void setMaxConnections(int maxConnections) {
-        client.setMaxConnectionsPerDestination(maxConnections);
-    }
-
-    public boolean isSynchronous() {
-        return false;
-    }
-
-    /**
-     * Sends a notification to the Apple Push Notification Service.
-     *
-     * @param notification The notification built using
-     *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
-     * @param listener     The listener to be called after the request is complete
-     */
-    public void push(Notification notification, NotificationResponseListener listener) {
-        _push(notification, listener);
-    }
-
-    public NotificationResponse push(Notification notification) {
-        throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
-    }
-
-    private void _push(Notification notification, NotificationResponseListener listener) {
-        Request req = Utils.buildRequest(client, notification, gateway);
-
-        semaphore.acquireUninterruptibly();
-
-        req.send(new ResponseListener(semaphore, notification, listener));
     }
 
     public void shutdown() throws Exception {
