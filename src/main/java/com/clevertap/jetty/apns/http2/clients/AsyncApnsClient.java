@@ -47,7 +47,9 @@ import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A wrapper around Jetty's HttpClient to send out notifications using Apple's HTTP/2 API.
@@ -119,6 +121,12 @@ public class AsyncApnsClient implements ApnsClient {
         return false;
     }
 
+    @Override
+	public void push(String topic, Notification notification, NotificationResponseListener listener) {
+    	_push(topic, notification, listener);
+		
+	}
+    
     /**
      * Sends a notification to the Apple Push Notification Service.
      *
@@ -127,15 +135,15 @@ public class AsyncApnsClient implements ApnsClient {
      * @param listener     The listener to be called after the request is complete
      */
     public void push(Notification notification, NotificationResponseListener listener) {
-        _push(notification, listener);
+        _push(null, notification, listener);
     }
 
     public NotificationResponse push(Notification notification) {
         throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
     }
 
-    private void _push(Notification notification, NotificationResponseListener listener) {
-        Request req = Utils.buildRequest(client, notification, gateway);
+    private void _push(String topic, Notification notification, NotificationResponseListener listener) {
+        Request req = Utils.buildRequest(client, topic, notification, gateway);
 
         semaphore.acquireUninterruptibly();
 
@@ -145,4 +153,10 @@ public class AsyncApnsClient implements ApnsClient {
     public void shutdown() throws Exception {
         client.stop();
     }
+
+	@Override
+	public NotificationResponse push(String topic, Notification notification)
+			throws InterruptedException, ExecutionException, TimeoutException {
+		throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
+	}
 }

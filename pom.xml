@@ -12,25 +12,25 @@
         <dependency>
             <groupId>org.eclipse.jetty.http2</groupId>
             <artifactId>http2-http-client-transport</artifactId>
-            <version>9.3.7.RC0</version>
+            <version>9.3.7.v20160115</version>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
-            <version>9.3.7.RC0</version>
+            <version>9.3.7.v20160115</version>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty.http2</groupId>
             <artifactId>http2-client</artifactId>
-            <version>9.3.7.RC0</version>
+            <version>9.3.7.v20160115</version>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-client</artifactId>
-            <version>9.3.7.RC0</version>
+            <version>9.3.7.v20160115</version>
         </dependency>
 
         <dependency>

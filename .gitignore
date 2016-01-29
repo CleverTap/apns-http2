@@ -6,3 +6,7 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
+
+.classpath
+.project
+.settings/
