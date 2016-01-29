@@ -90,8 +90,8 @@ public class SyncApnsClient implements ApnsClient {
 
     @Override
     public NotificationResponse push(Notification notification)
-    		throws InterruptedException, ExecutionException, TimeoutException {
-    	return push(null, notification);
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return push(null, notification);
     }
 
     public NotificationResponse push(String topic, Notification notification)
@@ -127,10 +127,10 @@ public class SyncApnsClient implements ApnsClient {
         client.stop();
     }
 
-	@Override
-	public void push(String topic, Notification notification, NotificationResponseListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void push(String topic, Notification notification, NotificationResponseListener listener) {
+        // TODO Auto-generated method stub
+
+    }
 
 }

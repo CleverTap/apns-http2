@@ -66,7 +66,7 @@ public interface ApnsClient {
      * @param listener     The listener to be called after the request is complete
      */
     void push(Notification notification, NotificationResponseListener listener);
-    
+
     /**
      * Sends a notification asynchronously to the Apple Push Notification Service on topic.
      *
@@ -85,7 +85,7 @@ public interface ApnsClient {
      * @return The notification response
      */
     NotificationResponse push(Notification notification) throws InterruptedException, ExecutionException, TimeoutException;
-    
+
     /**
      * Sends a notification synchronously to the Apple Push Notification Service on topic.
      *

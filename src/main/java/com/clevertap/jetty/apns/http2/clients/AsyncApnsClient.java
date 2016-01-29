@@ -122,11 +122,11 @@ public class AsyncApnsClient implements ApnsClient {
     }
 
     @Override
-	public void push(String topic, Notification notification, NotificationResponseListener listener) {
-    	_push(topic, notification, listener);
-		
-	}
-    
+    public void push(String topic, Notification notification, NotificationResponseListener listener) {
+        _push(topic, notification, listener);
+
+    }
+
     /**
      * Sends a notification to the Apple Push Notification Service.
      *
@@ -154,9 +154,9 @@ public class AsyncApnsClient implements ApnsClient {
         client.stop();
     }
 
-	@Override
-	public NotificationResponse push(String topic, Notification notification)
-			throws InterruptedException, ExecutionException, TimeoutException {
-		throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
-	}
+    @Override
+    public NotificationResponse push(String topic, Notification notification)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
+    }
 }
