@@ -47,7 +47,9 @@ import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A wrapper around Jetty's HttpClient to send out notifications using Apple's HTTP/2 API.
@@ -151,4 +153,10 @@ public class AsyncApnsClient implements ApnsClient {
     public void shutdown() throws Exception {
         client.stop();
     }
+
+	@Override
+	public NotificationResponse push(String topic, Notification notification)
+			throws InterruptedException, ExecutionException, TimeoutException {
+		throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
+	}
 }

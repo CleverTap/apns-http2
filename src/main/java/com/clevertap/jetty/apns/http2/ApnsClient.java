@@ -85,6 +85,16 @@ public interface ApnsClient {
      * @return The notification response
      */
     NotificationResponse push(Notification notification) throws InterruptedException, ExecutionException, TimeoutException;
+    
+    /**
+     * Sends a notification synchronously to the Apple Push Notification Service on topic.
+     *
+     * @param topic        The topic of notification
+     * @param notification The notification built using
+     *                     {@link Notification.Builder}
+     * @return The notification response
+     */
+    NotificationResponse push(String topic, Notification notification) throws InterruptedException, ExecutionException, TimeoutException;
 
     /**
      * Starts the HTTP client for pushing messages.
