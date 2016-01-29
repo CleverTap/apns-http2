@@ -119,6 +119,12 @@ public class AsyncApnsClient implements ApnsClient {
         return false;
     }
 
+    @Override
+	public void push(String topic, Notification notification, NotificationResponseListener listener) {
+    	_push(topic, notification, listener);
+		
+	}
+    
     /**
      * Sends a notification to the Apple Push Notification Service.
      *
@@ -127,15 +133,15 @@ public class AsyncApnsClient implements ApnsClient {
      * @param listener     The listener to be called after the request is complete
      */
     public void push(Notification notification, NotificationResponseListener listener) {
-        _push(notification, listener);
+        _push(null, notification, listener);
     }
 
     public NotificationResponse push(Notification notification) {
         throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
     }
 
-    private void _push(Notification notification, NotificationResponseListener listener) {
-        Request req = Utils.buildRequest(client, notification, gateway);
+    private void _push(String topic, Notification notification, NotificationResponseListener listener) {
+        Request req = Utils.buildRequest(client, topic, notification, gateway);
 
         semaphore.acquireUninterruptibly();
 

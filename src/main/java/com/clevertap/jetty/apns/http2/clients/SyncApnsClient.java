@@ -88,9 +88,15 @@ public class SyncApnsClient implements ApnsClient {
         throw new UnsupportedOperationException("Asynchronous requests are not supported by this client");
     }
 
+    @Override
     public NotificationResponse push(Notification notification)
+    		throws InterruptedException, ExecutionException, TimeoutException {
+    	return push(null, notification);
+    }
+
+    public NotificationResponse push(String topic, Notification notification)
             throws InterruptedException, ExecutionException, TimeoutException {
-        Request req = Utils.buildRequest(client, notification, gateway);
+        Request req = Utils.buildRequest(client, topic, notification, gateway);
         ContentResponse cr = req.send();
 
         final int statusCode = cr.getStatus();
@@ -120,4 +126,11 @@ public class SyncApnsClient implements ApnsClient {
     public void shutdown() throws Exception {
         client.stop();
     }
+
+	@Override
+	public void push(String topic, Notification notification, NotificationResponseListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

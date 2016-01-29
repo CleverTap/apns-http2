@@ -66,6 +66,16 @@ public interface ApnsClient {
      * @param listener     The listener to be called after the request is complete
      */
     void push(Notification notification, NotificationResponseListener listener);
+    
+    /**
+     * Sends a notification asynchronously to the Apple Push Notification Service on topic.
+     *
+     * @param topic        The topic of notification
+     * @param notification The notification built using
+     *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
+     * @param listener     The listener to be called after the request is complete
+     */
+    void push(String topic, Notification notification, NotificationResponseListener listener);
 
     /**
      * Sends a notification synchronously to the Apple Push Notification Service.
