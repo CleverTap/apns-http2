@@ -60,6 +60,7 @@ public class AsyncApnsClient implements ApnsClient {
     protected final HttpClient client;
 
     protected final String gateway;
+    private final int maxRequestsQueued;
 
     /**
      * This semaphore is used as we cannot tell whether Jetty's internal queue is full or not.
@@ -90,6 +91,7 @@ public class AsyncApnsClient implements ApnsClient {
         }
 
         this.semaphore = semaphore;
+        this.maxRequestsQueued = maxRequestsQueued;
     }
 
     public void start() throws IOException {
@@ -151,7 +153,10 @@ public class AsyncApnsClient implements ApnsClient {
     }
 
     public void shutdown() throws Exception {
+        // todo: must maintain a shutting down flag, and throw an IllegalArgumentException for further calls to push()
+        semaphore.acquireUninterruptibly(maxRequestsQueued);
         client.stop();
+        semaphore.release(maxRequestsQueued);
     }
 
     @Override
