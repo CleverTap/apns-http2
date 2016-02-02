@@ -67,18 +67,22 @@ public class AsyncApnsClient implements ApnsClient {
      * Hopefully, this will change in the future.
      */
     private final Semaphore semaphore;
+    protected final String defaultTopic;
 
     /**
      * Creates a new client and automatically loads the key store
      * with the push certificate read from the input stream.
      *
-     * @param certificate The client certificate to be used
-     * @param password    The password (if required, else null)
-     * @param production  Whether to use the production endpoint or the sandbox endpoint
-     * @param semaphore   A semaphore used to control the notifications queued
+     * @param certificate  The client certificate to be used
+     * @param password     The password (if required, else null)
+     * @param production   Whether to use the production endpoint or the sandbox endpoint
+     * @param semaphore    A semaphore used to control the notifications queued
+     * @param defaultTopic A default topic (can be changed per message)
      */
-    public AsyncApnsClient(InputStream certificate, String password, boolean production, int maxRequestsQueued, Semaphore semaphore)
+    public AsyncApnsClient(InputStream certificate, String password, boolean production, int maxRequestsQueued,
+                           Semaphore semaphore, String defaultTopic)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        this.defaultTopic = defaultTopic;
         this.client = Utils.buildClient(certificate, password);
 
         setMaxConnections(1);
@@ -126,7 +130,6 @@ public class AsyncApnsClient implements ApnsClient {
     @Override
     public void push(String topic, Notification notification, NotificationResponseListener listener) {
         _push(topic, notification, listener);
-
     }
 
     /**
@@ -140,11 +143,8 @@ public class AsyncApnsClient implements ApnsClient {
         _push(null, notification, listener);
     }
 
-    public NotificationResponse push(Notification notification) {
-        throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
-    }
-
     private void _push(String topic, Notification notification, NotificationResponseListener listener) {
+        topic = topic == null ? defaultTopic : topic;
         Request req = Utils.buildRequest(client, topic, notification, gateway);
 
         semaphore.acquireUninterruptibly();
@@ -157,6 +157,11 @@ public class AsyncApnsClient implements ApnsClient {
         semaphore.acquireUninterruptibly(maxRequestsQueued);
         client.stop();
         semaphore.release(maxRequestsQueued);
+    }
+
+    @Override
+    public NotificationResponse push(Notification notification) {
+        throw new UnsupportedOperationException("Synchronous requests are not supported by this client");
     }
 
     @Override

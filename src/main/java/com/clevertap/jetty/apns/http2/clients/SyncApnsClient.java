@@ -55,17 +55,19 @@ public class SyncApnsClient implements ApnsClient {
     protected final HttpClient client;
 
     protected final String gateway;
+    protected final String defaultTopic;
 
     /**
      * Creates a new client and automatically loads the key store
      * with the push certificate read from the input stream.
-     *
-     * @param certificate The client certificate to be used
+     *  @param certificate The client certificate to be used
      * @param password    The password (if required, else null)
      * @param production  Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic A default topic (can be changed per message)
      */
-    public SyncApnsClient(InputStream certificate, String password, boolean production)
+    public SyncApnsClient(InputStream certificate, String password, boolean production, String defaultTopic)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        this.defaultTopic = defaultTopic;
         client = Utils.buildClient(certificate, password);
 
         if (production) {
@@ -84,7 +86,13 @@ public class SyncApnsClient implements ApnsClient {
         return client;
     }
 
+    @Override
     public void push(Notification notification, NotificationResponseListener listener) {
+        throw new UnsupportedOperationException("Asynchronous requests are not supported by this client");
+    }
+
+    @Override
+    public void push(String topic, Notification notification, NotificationResponseListener listener) {
         throw new UnsupportedOperationException("Asynchronous requests are not supported by this client");
     }
 
@@ -96,6 +104,9 @@ public class SyncApnsClient implements ApnsClient {
 
     public NotificationResponse push(String topic, Notification notification)
             throws InterruptedException, ExecutionException, TimeoutException {
+
+        topic = topic == null ? defaultTopic : topic;
+
         Request req = Utils.buildRequest(client, topic, notification, gateway);
         ContentResponse cr = req.send();
 
@@ -126,11 +137,4 @@ public class SyncApnsClient implements ApnsClient {
     public void shutdown() throws Exception {
         client.stop();
     }
-
-    @Override
-    public void push(String topic, Notification notification, NotificationResponseListener listener) {
-        // TODO Auto-generated method stub
-
-    }
-
 }

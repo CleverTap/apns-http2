@@ -50,6 +50,7 @@ public class ApnsClientBuilder {
     private boolean asynchronous = false;
     private int maxQueuedNotifications = 2000;
     private Semaphore semaphore;
+    private String defaultTopic = null;
 
     public ApnsClientBuilder withCertificate(InputStream inputStream) {
         certificate = inputStream;
@@ -92,6 +93,11 @@ public class ApnsClientBuilder {
         return this;
     }
 
+    public ApnsClientBuilder withDefaultTopic(String defaultTopic) {
+        this.defaultTopic = defaultTopic;
+        return this;
+    }
+
     public ApnsClientBuilder withMaxQueuedNotifications(int maxQueuedNotifications) {
         this.maxQueuedNotifications = maxQueuedNotifications;
         return this;
@@ -108,9 +114,9 @@ public class ApnsClientBuilder {
             }
 
             return new AsyncApnsClient(certificate, password,
-                    production, maxQueuedNotifications, semaphore);
+                    production, maxQueuedNotifications, semaphore, defaultTopic);
         } else {
-            return new SyncApnsClient(certificate, password, production);
+            return new SyncApnsClient(certificate, password, production, defaultTopic);
         }
     }
 }
