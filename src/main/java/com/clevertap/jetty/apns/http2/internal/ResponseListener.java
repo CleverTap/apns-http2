@@ -36,6 +36,8 @@ import com.clevertap.jetty.apns.http2.NotificationResponseListener;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Semaphore;
 
@@ -46,6 +48,7 @@ import java.util.concurrent.Semaphore;
  * Also see {@link NotificationResponseListener}.
  */
 public final class ResponseListener extends BufferingResponseListener {
+    private static final Logger logger = LoggerFactory.getLogger(ResponseListener.class);
     private final Semaphore semaphore;
     private final Notification notification;
     private final NotificationResponseListener nrl;
@@ -58,16 +61,20 @@ public final class ResponseListener extends BufferingResponseListener {
 
     @Override
     public void onComplete(Result result) {
-        semaphore.release();
-
-        if (nrl != null) {
-            Response response = result.getResponse();
-            int status = response.getStatus();
-            if (status == 200) {
-                nrl.onSuccess(notification);
-            } else {
-                nrl.onFailure(notification, NotificationRequestError.get(status), getContentAsString());
+        try {
+            if (nrl != null) {
+                Response response = result.getResponse();
+                int status = response.getStatus();
+                if (status == 200) {
+                    nrl.onSuccess(notification);
+                } else {
+                    nrl.onFailure(notification, NotificationRequestError.get(status), getContentAsString());
+                }
             }
+        } catch (Throwable t) {
+            logger.error("Failed to execute the response listener", t);
+        } finally {
+            semaphore.release();
         }
     }
 }

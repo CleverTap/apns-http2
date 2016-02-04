@@ -47,6 +47,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Internal utilities.
@@ -72,6 +73,7 @@ public class Utils {
     public static Request buildRequest(HttpClient client, String topic, Notification notification, String gateway) {
 
         Request request = client.POST(gateway)
+                .timeout(30, TimeUnit.SECONDS)
                 .path("/3/device/" + notification.getToken())
                 .header("content-length", notification.getPayload().getBytes(Charset.forName("UTF-8")).length + "")
                 .content(new StringContentProvider(notification.getPayload(), Charset.forName("UTF-8")));
