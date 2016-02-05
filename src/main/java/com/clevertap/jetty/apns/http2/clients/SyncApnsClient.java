@@ -60,9 +60,10 @@ public class SyncApnsClient implements ApnsClient {
     /**
      * Creates a new client and automatically loads the key store
      * with the push certificate read from the input stream.
-     *  @param certificate The client certificate to be used
-     * @param password    The password (if required, else null)
-     * @param production  Whether to use the production endpoint or the sandbox endpoint
+     *
+     * @param certificate  The client certificate to be used
+     * @param password     The password (if required, else null)
+     * @param production   Whether to use the production endpoint or the sandbox endpoint
      * @param defaultTopic A default topic (can be changed per message)
      */
     public SyncApnsClient(InputStream certificate, String password, boolean production, String defaultTopic)
@@ -92,20 +93,11 @@ public class SyncApnsClient implements ApnsClient {
     }
 
     @Override
-    public void push(String topic, Notification notification, NotificationResponseListener listener) {
-        throw new UnsupportedOperationException("Asynchronous requests are not supported by this client");
-    }
-
-    @Override
     public NotificationResponse push(Notification notification)
             throws InterruptedException, ExecutionException, TimeoutException {
-        return push(null, notification);
-    }
 
-    public NotificationResponse push(String topic, Notification notification)
-            throws InterruptedException, ExecutionException, TimeoutException {
-
-        topic = topic == null ? defaultTopic : topic;
+        final String notificationTopic = notification.getTopic();
+        final String topic = notificationTopic == null ? defaultTopic : notificationTopic;
 
         Request req = Utils.buildRequest(client, topic, notification, gateway);
         ContentResponse cr = req.send();

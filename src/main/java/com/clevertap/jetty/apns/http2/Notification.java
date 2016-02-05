@@ -43,16 +43,28 @@ import java.util.HashMap;
 public class Notification {
     private final String payload;
     private final String token;
+    private final String topic;
 
     /**
      * Constructs a new Notification with a payload and token.
      *
      * @param payload The JSON body (which is used for the request)
      * @param token   The device token
+     * @param topic   The topic for this notification
      */
-    protected Notification(String payload, String token) {
+    protected Notification(String payload, String token, String topic) {
         this.payload = payload;
         this.token = token;
+        this.topic = topic;
+    }
+
+    /**
+     * Retrieves the topic.
+     *
+     * @return The topic
+     */
+    public String getTopic() {
+        return topic;
     }
 
     /**
@@ -81,6 +93,7 @@ public class Notification {
 
         private final HashMap<String, Object> root, aps, alert;
         private final String token;
+        private String topic = null;
 
         /**
          * Creates a new notification builder.
@@ -133,6 +146,11 @@ public class Notification {
             return this;
         }
 
+        public Builder topic(String topic) {
+            this.topic = topic;
+            return this;
+        }
+
         public int size() {
             try {
                 return build().getPayload().getBytes("UTF-8").length;
@@ -157,7 +175,7 @@ public class Notification {
                 // Should not happen
                 throw new RuntimeException(e);
             }
-            return new Notification(payload, token);
+            return new Notification(payload, token, topic);
         }
     }
 }
