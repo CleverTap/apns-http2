@@ -68,7 +68,7 @@ public final class ResponseListener extends BufferingResponseListener {
                 if (status == 200) {
                     nrl.onSuccess(notification);
                 } else {
-                    nrl.onFailure(notification, NotificationRequestError.get(status), getContentAsString());
+                    nrl.onFailure(notification, NotificationRequestError.get(status), getContentAsString(), result.getFailure());
                 }
             }
         } catch (Throwable t) {
