@@ -44,8 +44,6 @@ import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A wrapper around Jetty's HttpClient to send out notifications using Apple's HTTP/2 API.
@@ -93,28 +91,36 @@ public class SyncApnsClient implements ApnsClient {
     }
 
     @Override
-    public NotificationResponse push(Notification notification)
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public NotificationResponse push(Notification notification) {
 
         final String notificationTopic = notification.getTopic();
         final String topic = notificationTopic == null ? defaultTopic : notificationTopic;
 
         Request req = Utils.buildRequest(client, topic, notification, gateway);
-        ContentResponse cr = req.send();
 
-        final int statusCode = cr.getStatus();
+        Throwable cause;
+        ContentResponse cr;
+        try {
+            cr = req.send();
+            cause = null;
+        } catch (Throwable t) {
+            cause = t;
+            cr = null;
+        }
+
+        final int statusCode = cr != null ? cr.getStatus() : -1;
         final NotificationRequestError error;
         final String contentBody;
 
         if (statusCode != 200) {
             error = NotificationRequestError.get(statusCode);
-            contentBody = cr.getContentAsString();
+            contentBody = cr != null ? cr.getContentAsString() : null;
         } else {
             error = null;
             contentBody = null;
         }
 
-        return new NotificationResponse(error, statusCode, contentBody);
+        return new NotificationResponse(error, statusCode, contentBody, cause);
     }
 
     public void start() throws IOException {

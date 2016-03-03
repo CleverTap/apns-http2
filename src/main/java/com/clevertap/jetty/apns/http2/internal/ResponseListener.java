@@ -32,6 +32,7 @@ package com.clevertap.jetty.apns.http2.internal;
 
 import com.clevertap.jetty.apns.http2.Notification;
 import com.clevertap.jetty.apns.http2.NotificationRequestError;
+import com.clevertap.jetty.apns.http2.NotificationResponse;
 import com.clevertap.jetty.apns.http2.NotificationResponseListener;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
@@ -68,7 +69,9 @@ public final class ResponseListener extends BufferingResponseListener {
                 if (status == 200) {
                     nrl.onSuccess(notification);
                 } else {
-                    nrl.onFailure(notification, NotificationRequestError.get(status), getContentAsString(), result.getFailure());
+                    final NotificationResponse nr = new NotificationResponse(NotificationRequestError.get(status),
+                            status, getContentAsString(), result.getFailure());
+                    nrl.onFailure(notification, nr);
                 }
             }
         } catch (Throwable t) {

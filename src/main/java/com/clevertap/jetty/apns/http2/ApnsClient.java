@@ -33,8 +33,6 @@ package com.clevertap.jetty.apns.http2;
 import org.eclipse.jetty.client.HttpClient;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Interface for general purpose APNS clients.
@@ -74,7 +72,7 @@ public interface ApnsClient {
      *                     {@link Notification.Builder}
      * @return The notification response
      */
-    NotificationResponse push(Notification notification) throws InterruptedException, ExecutionException, TimeoutException;
+    NotificationResponse push(Notification notification);
 
     /**
      * Starts the HTTP client for pushing messages.

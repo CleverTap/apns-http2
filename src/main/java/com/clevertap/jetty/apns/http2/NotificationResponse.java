@@ -37,11 +37,22 @@ public class NotificationResponse {
     private final NotificationRequestError error;
     private final int httpStatusCode;
     private final String responseBody;
+    private final Throwable cause;
 
-    public NotificationResponse(NotificationRequestError error, int httpStatusCode, String responseBody) {
+    public NotificationResponse(NotificationRequestError error, int httpStatusCode, String responseBody, Throwable cause) {
         this.error = error;
         this.httpStatusCode = httpStatusCode;
         this.responseBody = responseBody;
+        this.cause = cause;
+    }
+
+    /**
+     * Returns the throwable from the underlying HttpClient.
+     *
+     * @return The throwable
+     */
+    public Throwable getCause() {
+        return cause;
     }
 
     /**
@@ -77,6 +88,7 @@ public class NotificationResponse {
                 "error=" + error +
                 ", httpStatusCode=" + httpStatusCode +
                 ", responseBody='" + responseBody + '\'' +
+                ", cause=" + cause +
                 '}';
     }
 }

@@ -45,11 +45,9 @@ client.push(n, new NotificationResponseListener() {
     public void onSuccess(Notification notification) {
         System.out.println("success!");
     }
-
     @Override
-    public void onFailure(Notification notification, NotificationRequestError err, String responseContent) {
-        System.out.println("failure: " + err.name());
-        System.out.println("content: " + responseContent);
+    public void onFailure(Notification notification, NotificationResponse nr) {
+        System.out.println("failure: " + nr);
     }
 });
 ```

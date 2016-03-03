@@ -46,10 +46,8 @@ public interface NotificationResponseListener {
     /**
      * Signals a failed notification.
      *
-     * @param notification             The notification that failed
-     * @param notificationRequestError The response error (HTTP status code)
-     * @param responseContent          The body of the response
-     * @param throwable                The cause of this error, if available (may be null)
+     * @param notification The notification that failed
+     * @param response     The notification response
      */
-    void onFailure(Notification notification, NotificationRequestError notificationRequestError, String responseContent, Throwable throwable);
+    void onFailure(Notification notification, NotificationResponse response);
 }
