@@ -74,6 +74,7 @@ public class CertificateUtils {
      * @param subject The subject of the certificate
      * @return A map containing the components of the subject
      */
+    @SuppressWarnings("WeakerAccess")
     public static Map<String, String> splitCertificateSubject(String subject) {
         HashMap<String, String> map = new HashMap<>();
         if (subject != null) {
