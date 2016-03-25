@@ -30,6 +30,7 @@
 
 package com.clevertap.jetty.apns.http2.internal;
 
+import com.clevertap.jetty.apns.http2.CertificateUtils;
 import com.clevertap.jetty.apns.http2.Notification;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
@@ -40,13 +41,11 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,9 +60,8 @@ public class Utils {
         ks.load(certificate, password.toCharArray());
 
         // Test our certificate
-        if (((X509Certificate) ks.getCertificate(ks.aliases().nextElement())).getNotAfter().before(new Date())) {
-            throw new CertificateException("Certificate expired");
-        }
+        final X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+        CertificateUtils.validateCertificate(cert);
 
         sslContext.setKeyStore(ks);
         sslContext.setKeyStorePassword(password);
@@ -75,8 +73,8 @@ public class Utils {
         Request request = client.POST(gateway)
                 .timeout(2, TimeUnit.MINUTES)
                 .path("/3/device/" + notification.getToken())
-                .header("content-length", notification.getPayload().getBytes(Charset.forName("UTF-8")).length + "")
-                .content(new StringContentProvider(notification.getPayload(), Charset.forName("UTF-8")));
+                .header("content-length", notification.getPayload().getBytes(Constants.UTF_8).length + "")
+                .content(new StringContentProvider(notification.getPayload(), Constants.UTF_8));
 
         if (topic != null) request.header("apns-topic", topic);
 

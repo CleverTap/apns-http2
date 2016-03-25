@@ -62,6 +62,19 @@ public class CertificateUtils {
 
 
         String subject = ((X509Certificate) ks.getCertificate(ks.aliases().nextElement())).getSubjectDN().getName();
+        return splitCertificateSubject(subject);
+    }
+
+    /**
+     * Split the subject into it's components such as UID, C, OU, DN.
+     * <p>
+     * Example:
+     * {UID=com.wizrocket.BeardedRobot, C=US, OU=PNEY234A6B, CN=Apple Production IOS Push Services: com.wizrocket.BeardedRobot}
+     *
+     * @param subject The subject of the certificate
+     * @return A map containing the components of the subject
+     */
+    public static Map<String, String> splitCertificateSubject(String subject) {
         HashMap<String, String> map = new HashMap<>();
         if (subject != null) {
             String[] parts = subject.split(",");
@@ -72,7 +85,26 @@ public class CertificateUtils {
                 map.put(kv[0].trim(), kv[1].trim());
             }
         }
-
         return map;
+    }
+
+    /**
+     * Checks a certificate for it's validity, as well as that it's a push certificate.
+     *
+     * @param certificate The certificate to be validated
+     * @throws CertificateException When the certificate is not valid, or if it's expired,
+     *                              or if it's not a push certificate
+     */
+    public static void validateCertificate(X509Certificate certificate)
+            throws CertificateException {
+        // Test for it's validity
+        certificate.checkValidity();
+
+        // Ensure that it's a push certificate
+        final Map<String, String> stringStringMap = CertificateUtils.splitCertificateSubject(certificate.getSubjectDN().getName());
+        final String cn = stringStringMap.get("CN");
+        if (!cn.toLowerCase().contains("push")) {
+            throw new CertificateException("Not a push certificate - " + cn);
+        }
     }
 }

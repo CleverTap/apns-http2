@@ -30,10 +30,13 @@
 
 package com.clevertap.jetty.apns.http2.internal;
 
+import java.nio.charset.Charset;
+
 /**
  * Internal constants used by this library.
  */
 public class Constants {
+    public static final Charset UTF_8 = Charset.forName("UTF-8");
     public static final String ENDPOINT_PRODUCTION = "https://api.push.apple.com";
     public static final String ENDPOINT_SANDBOX = "https://api.development.push.apple.com";
 }
