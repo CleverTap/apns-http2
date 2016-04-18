@@ -37,4 +37,8 @@ import java.security.cert.CertificateException;
  * the environment has been set to production, or vice versa.
  */
 public class CertificateEnvironmentMismatchException extends CertificateException {
+
+    public CertificateEnvironmentMismatchException(String s) {
+        super(s);
+    }
 }

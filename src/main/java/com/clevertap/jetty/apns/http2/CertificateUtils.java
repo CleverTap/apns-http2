@@ -124,9 +124,9 @@ public class CertificateUtils {
         }
 
         if (production && cn.toLowerCase().contains("apple development ios push services")) {
-            throw new CertificateEnvironmentMismatchException();
+            throw new CertificateEnvironmentMismatchException("Invalid environment for this certificate");
         } else if (!production && cn.toLowerCase().contains("apple production ios push services")) {
-            throw new CertificateEnvironmentMismatchException();
+            throw new CertificateEnvironmentMismatchException("Invalid environment for this certificate");
         }
     }
 }
