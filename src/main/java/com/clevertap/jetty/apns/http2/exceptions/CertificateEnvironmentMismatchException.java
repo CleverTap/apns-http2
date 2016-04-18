@@ -33,9 +33,8 @@ package com.clevertap.jetty.apns.http2.exceptions;
 import java.security.cert.CertificateException;
 
 /**
- * User: Jude Pereira
- * Date: 18/04/2016
- * Time: 17:34
+ * Thrown when a development certificate has been uploaded and
+ * the environment has been set to production, or vice versa.
  */
 public class CertificateEnvironmentMismatchException extends CertificateException {
 }
