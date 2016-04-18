@@ -53,7 +53,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Utils {
 
-    public static HttpClient buildClient(InputStream certificate, String password) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+    public static HttpClient buildClient(InputStream certificate, String password, boolean production) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         password = password == null ? "" : password;
         SslContextFactory sslContext = new SslContextFactory(false);
         KeyStore ks = KeyStore.getInstance("PKCS12");
@@ -61,7 +61,7 @@ public class Utils {
 
         // Test our certificate
         final X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
-        CertificateUtils.validateCertificate(cert);
+        CertificateUtils.validateCertificate(production, cert);
 
         sslContext.setKeyStore(ks);
         sslContext.setKeyStorePassword(password);

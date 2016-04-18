@@ -80,7 +80,7 @@ public class AsyncApnsClient implements ApnsClient {
                            Semaphore semaphore, String defaultTopic)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         this.defaultTopic = defaultTopic;
-        this.client = Utils.buildClient(certificate, password);
+        this.client = Utils.buildClient(certificate, password, production);
 
         setMaxConnections(1);
         client.setMaxRequestsQueuedPerDestination(maxRequestsQueued);

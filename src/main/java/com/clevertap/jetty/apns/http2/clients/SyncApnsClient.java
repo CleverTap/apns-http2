@@ -67,7 +67,7 @@ public class SyncApnsClient implements ApnsClient {
     public SyncApnsClient(InputStream certificate, String password, boolean production, String defaultTopic)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         this.defaultTopic = defaultTopic;
-        client = Utils.buildClient(certificate, password);
+        client = Utils.buildClient(certificate, password, production);
 
         if (production) {
             gateway = Constants.ENDPOINT_PRODUCTION;

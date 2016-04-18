@@ -30,6 +30,8 @@
 
 package com.clevertap.jetty.apns.http2;
 
+import com.clevertap.jetty.apns.http2.exceptions.CertificateEnvironmentMismatchException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -56,13 +58,24 @@ public class CertificateUtils {
      */
     public static Map<String, String> splitCertificateSubject(InputStream certificate, String password)
             throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+        String subject = getCertificate(certificate, password).getSubjectDN().getName();
+        return splitCertificateSubject(subject);
+    }
+
+    /**
+     * Reads the certificate from the input stream, and returns an instance of X509Certificate.
+     *
+     * @param certificate The certificate
+     * @param password    The password
+     * @return The certificate
+     */
+    public static X509Certificate getCertificate(InputStream certificate, String password)
+            throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
         password = password == null ? "" : password;
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(certificate, password.toCharArray());
 
-
-        String subject = ((X509Certificate) ks.getCertificate(ks.aliases().nextElement())).getSubjectDN().getName();
-        return splitCertificateSubject(subject);
+        return (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
     }
 
     /**
@@ -96,8 +109,10 @@ public class CertificateUtils {
      * @throws CertificateException When the certificate is not valid, or if it's expired,
      *                              or if it's not a push certificate
      */
-    public static void validateCertificate(X509Certificate certificate)
+    public static void validateCertificate(boolean production, X509Certificate certificate)
             throws CertificateException {
+        if (certificate == null) throw new CertificateException("Null certificate");
+
         // Test for it's validity
         certificate.checkValidity();
 
@@ -106,6 +121,12 @@ public class CertificateUtils {
         final String cn = stringStringMap.get("CN");
         if (!cn.toLowerCase().contains("push")) {
             throw new CertificateException("Not a push certificate - " + cn);
+        }
+
+        if (production && cn.toLowerCase().contains("apple development ios push services")) {
+            throw new CertificateEnvironmentMismatchException();
+        } else if (!production && cn.toLowerCase().contains("apple production ios push services")) {
+            throw new CertificateEnvironmentMismatchException();
         }
     }
 }
