@@ -31,11 +31,14 @@
 package com.clevertap.jetty.apns.http2.clients;
 
 import com.clevertap.jetty.apns.http2.ApnsClient;
+import okhttp3.ConnectionPool;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.Semaphore;
 
@@ -51,6 +54,19 @@ public class ApnsClientBuilder {
     private int maxQueuedNotifications = 2000;
     private Semaphore semaphore;
     private String defaultTopic = null;
+
+    private boolean useOkHttp3 = false;
+    private ConnectionPool connectionPool;
+
+    public ApnsClientBuilder withOkHttp3() {
+        useOkHttp3 = true;
+        return this;
+    }
+
+    public ApnsClientBuilder withOkHttp3ConnectionPool(ConnectionPool connectionPool) {
+        this.connectionPool = connectionPool;
+        return this;
+    }
 
     public ApnsClientBuilder withCertificate(InputStream inputStream) {
         certificate = inputStream;
@@ -104,9 +120,14 @@ public class ApnsClientBuilder {
     }
 
     public ApnsClient build() throws CertificateException,
-            NoSuchAlgorithmException, KeyStoreException, IOException {
+            NoSuchAlgorithmException, KeyStoreException, IOException,
+            UnrecoverableKeyException, KeyManagementException {
 
         if (certificate == null) throw new CertificateException("Certificate cannot be null");
+
+        if (useOkHttp3) {
+            return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, connectionPool);
+        }
 
         if (asynchronous) {
             if (semaphore == null) {
