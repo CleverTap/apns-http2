@@ -42,10 +42,7 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * User: Jude Pereira
@@ -58,13 +55,6 @@ public class SyncOkHttpApnsClient implements ApnsClient {
     private final OkHttpClient client;
     private final String gateway;
     private static final MediaType mediaType = MediaType.parse("application/json");
-
-    private static AtomicLong nullResponse = new AtomicLong();
-    private static final Executor es = Executors.newScheduledThreadPool(1);
-
-    static {
-
-    }
 
     /**
      * Creates a new client and automatically loads the key store
