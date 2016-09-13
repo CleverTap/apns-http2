@@ -107,6 +107,20 @@ public class Notification {
             alert = new HashMap<>();
         }
 
+        public Builder mutableContent(boolean mutable) {
+            if (mutable) {
+                alert.put("mutable-content", 1);
+            } else {
+                alert.remove("mutable-content");
+            }
+
+            return this;
+        }
+
+        public Builder mutableContent() {
+            return this.mutableContent(true);
+        }
+
         public Builder alertBody(String body) {
             alert.put("body", body);
             return this;
