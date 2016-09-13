@@ -109,9 +109,9 @@ public class Notification {
 
         public Builder mutableContent(boolean mutable) {
             if (mutable) {
-                alert.put("mutable-content", 1);
+                aps.put("mutable-content", 1);
             } else {
-                alert.remove("mutable-content");
+                aps.remove("mutable-content");
             }
 
             return this;
