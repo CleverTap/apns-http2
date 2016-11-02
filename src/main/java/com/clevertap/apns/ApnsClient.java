@@ -28,67 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2;
+package com.clevertap.apns;
 
 /**
- * A wrapper around possible responses from the push gateway.
+ * Interface for general purpose APNS clients.
  */
-public class NotificationResponse {
-    private final NotificationRequestError error;
-    private final int httpStatusCode;
-    private final String responseBody;
-    private final Throwable cause;
-
-    public NotificationResponse(NotificationRequestError error, int httpStatusCode, String responseBody, Throwable cause) {
-        this.error = error;
-        this.httpStatusCode = httpStatusCode;
-        this.responseBody = responseBody;
-        this.cause = cause;
-    }
+public interface ApnsClient {
 
     /**
-     * Returns the throwable from the underlying HttpClient.
+     * Checks whether the client supports synchronous operations.
+     * <p>
+     * This is specified when building the client using
      *
-     * @return The throwable
+     * @return Whether the client supports synchronous operations
      */
-    public Throwable getCause() {
-        return cause;
-    }
+    boolean isSynchronous();
 
     /**
-     * Returns the error.
+     * Sends a notification asynchronously to the Apple Push Notification Service.
      *
-     * @return The error (null if no error)
+     * @param notification The notification built using
+     *                     {@link Notification.Builder}
+     * @param listener     The listener to be called after the request is complete
      */
-    public NotificationRequestError getError() {
-        return error;
-    }
+    void push(Notification notification, NotificationResponseListener listener);
 
     /**
-     * Returns the real HTTP status code.
+     * Sends a notification synchronously to the Apple Push Notification Service.
      *
-     * @return The HTTP status code
+     * @param notification The notification built using
+     *                     {@link Notification.Builder}
+     * @return The notification response
      */
-    public int getHttpStatusCode() {
-        return httpStatusCode;
-    }
-
-    /**
-     * Returns the content body (null for a successful response).
-     *
-     * @return The content body (null for a successful response)
-     */
-    public String getResponseBody() {
-        return responseBody;
-    }
-
-    @Override
-    public String toString() {
-        return "NotificationResponse{" +
-                "error=" + error +
-                ", httpStatusCode=" + httpStatusCode +
-                ", responseBody='" + responseBody + '\'' +
-                ", cause=" + cause +
-                '}';
-    }
+    NotificationResponse push(Notification notification);
 }

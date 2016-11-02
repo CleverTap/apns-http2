@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2.internal;
+package com.clevertap.apns.internal;
 
 import java.nio.charset.Charset;
 

@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2;
+package com.clevertap.apns;
 
-import com.clevertap.jetty.apns.http2.exceptions.CertificateEnvironmentMismatchException;
+import com.clevertap.apns.exceptions.CertificateEnvironmentMismatchException;
 
 import java.io.IOException;
 import java.io.InputStream;

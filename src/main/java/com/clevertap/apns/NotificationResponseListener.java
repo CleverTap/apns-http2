@@ -28,63 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2;
-
-import org.eclipse.jetty.client.HttpClient;
-
-import java.io.IOException;
+package com.clevertap.apns;
 
 /**
- * Interface for general purpose APNS clients.
+ * An interface for handling responses to notification requests.
  */
-public interface ApnsClient {
-
+public interface NotificationResponseListener {
     /**
-     * Checks whether the client supports synchronous operations.
+     * Signals a successful notification.
      * <p>
-     * This is specified when building the client using
+     * Note: For a successful request, the response body is empty.
      *
-     * @return Whether the client supports synchronous operations
+     * @param notification The notification that succeeded
      */
-    boolean isSynchronous();
-
-
-    /**
-     * Returns the underlying HTTP client.
-     *
-     * @return The HttpClient instance to send messages
-     */
-    HttpClient getHttpClient();
+    void onSuccess(Notification notification);
 
     /**
-     * Sends a notification asynchronously to the Apple Push Notification Service.
+     * Signals a failed notification.
      *
-     * @param notification The notification built using
-     *                     {@link com.clevertap.jetty.apns.http2.Notification.Builder}
-     * @param listener     The listener to be called after the request is complete
+     * @param notification The notification that failed
+     * @param response     The notification response
      */
-    void push(Notification notification, NotificationResponseListener listener);
-
-    /**
-     * Sends a notification synchronously to the Apple Push Notification Service.
-     *
-     * @param notification The notification built using
-     *                     {@link Notification.Builder}
-     * @return The notification response
-     */
-    NotificationResponse push(Notification notification);
-
-    /**
-     * Starts the HTTP client for pushing messages.
-     *
-     * @throws IOException When an error occurs
-     */
-    void start() throws IOException;
-
-    /**
-     * Stops the client.
-     *
-     * @throws Exception If any error occurs
-     */
-    void shutdown() throws Exception;
+    void onFailure(Notification notification, NotificationResponse response);
 }

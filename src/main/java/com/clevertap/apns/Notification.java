@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2;
+package com.clevertap.apns;
 
-import com.clevertap.jetty.apns.http2.clients.AsyncApnsClient;
+import com.clevertap.apns.clients.AsyncOkHttpApnsClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -175,7 +175,7 @@ public class Notification {
 
         /**
          * Builds the notification.
-         * Also see {@link AsyncApnsClient#push(Notification, NotificationResponseListener)}
+         * Also see {@link AsyncOkHttpApnsClient#push(Notification, NotificationResponseListener)}
          *
          * @return The notification
          */

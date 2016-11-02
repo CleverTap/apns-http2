@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2.clients;
+package com.clevertap.apns.clients;
 
-import com.clevertap.jetty.apns.http2.*;
-import com.clevertap.jetty.apns.http2.internal.Constants;
+import com.clevertap.apns.*;
+import com.clevertap.apns.internal.Constants;
+import com.clevertap.apns.internal.JWT;
 import okhttp3.*;
 import okio.BufferedSink;
-import org.eclipse.jetty.client.HttpClient;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -42,33 +42,64 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * User: Jude Pereira
- * Date: 23/03/2016
- * Time: 20:44
+ * A wrapper around OkHttp's http client to send out notifications using Apple's HTTP/2 API.
  */
 public class SyncOkHttpApnsClient implements ApnsClient {
 
     private final String defaultTopic;
-    private final OkHttpClient client;
+    private final String apnsAuthKey;
+    private final String teamID;
+    private final String keyID;
+    protected final OkHttpClient client;
     private final String gateway;
     private static final MediaType mediaType = MediaType.parse("application/json");
+
+    private long lastJWTTokenTS = 0;
+    private String cachedJWTToken = null;
+
+    /**
+     * Creates a new client which uses token authentication API.
+     *
+     * @param apnsAuthKey    The private key - exclude -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----
+     * @param teamID         The team ID
+     * @param keyID          The key ID (retrieved from the file name)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param connectionPool A connection pool to use. If null, a new one will be generated
+     */
+    public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
+                                String defaultTopic, ConnectionPool connectionPool) {
+        this.apnsAuthKey = apnsAuthKey;
+        this.teamID = teamID;
+        this.keyID = keyID;
+        client = getBuilder(connectionPool).build();
+
+        this.defaultTopic = defaultTopic;
+
+        gateway = production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX;
+    }
 
     /**
      * Creates a new client and automatically loads the key store
      * with the push certificate read from the input stream.
      *
-     * @param certificate  The client certificate to be used
-     * @param password     The password (if required, else null)
-     * @param production   Whether to use the production endpoint or the sandbox endpoint
-     * @param defaultTopic A default topic (can be changed per message)
+     * @param certificate    The client certificate to be used
+     * @param password       The password (if required, else null)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param connectionPool A connection pool to use. If null, a new one will be generated
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, ConnectionPool connectionPool)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException {
+
+        teamID = keyID = apnsAuthKey = null;
+
         password = password == null ? "" : password;
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(certificate, password.toCharArray());
@@ -87,26 +118,26 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
+        OkHttpClient.Builder builder = getBuilder(connectionPool);
+        builder.sslSocketFactory(sslSocketFactory);
+
+        client = builder.build();
+
+        this.defaultTopic = defaultTopic;
+        gateway = production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX;
+    }
+
+    private static OkHttpClient.Builder getBuilder(ConnectionPool connectionPool) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         builder.connectTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS);
 
-        builder.sslSocketFactory(sslSocketFactory);
-
         connectionPool = connectionPool == null ? new ConnectionPool(10, 10, TimeUnit.MINUTES) : connectionPool;
         builder.connectionPool(connectionPool);
 
-        this.defaultTopic = defaultTopic;
-
-        client = builder.build();
-
-        if (production) {
-            gateway = Constants.ENDPOINT_PRODUCTION;
-        } else {
-            gateway = Constants.ENDPOINT_SANDBOX;
-        }
+        return builder;
     }
 
     @Override
@@ -115,17 +146,11 @@ public class SyncOkHttpApnsClient implements ApnsClient {
     }
 
     @Override
-    public HttpClient getHttpClient() {
-        return null;
-    }
-
-    @Override
     public void push(Notification notification, NotificationResponseListener listener) {
         throw new UnsupportedOperationException("Asynchronous requests are not supported by this client");
     }
 
-    @Override
-    public NotificationResponse push(Notification notification) {
+    protected final Request buildRequest(Notification notification) {
         final String topic = notification.getTopic() != null ? notification.getTopic() : defaultTopic;
         Request.Builder rb = new Request.Builder()
                 .url(gateway + "/3/device/" + notification.getToken())
@@ -147,39 +172,53 @@ public class SyncOkHttpApnsClient implements ApnsClient {
             rb.header("apns-topic", topic);
         }
 
-        final Request request = rb.build();
-        Response response = null;
-        NotificationRequestError error = null;
-        String contentBody = null;
-        int statusCode = -1;
+        if (keyID != null && teamID != null && apnsAuthKey != null) {
 
-        Throwable cause = null;
+            // Generate a new JWT token if it's null, or older than 55 minutes
+            if (cachedJWTToken == null || System.currentTimeMillis() - lastJWTTokenTS > 55 * 60 * 1000) {
+                try {
+                    lastJWTTokenTS = System.currentTimeMillis();
+                    cachedJWTToken = JWT.getToken(teamID, keyID, apnsAuthKey);
+                } catch (InvalidKeySpecException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
+                    return null;
+                }
+            }
+
+            rb.header("authorization", "bearer " + cachedJWTToken);
+        }
+
+        return rb.build();
+    }
+
+
+    @Override
+    public NotificationResponse push(Notification notification) {
+        final Request request = buildRequest(notification);
+        Response response = null;
+
         try {
             response = client.newCall(request).execute();
-            statusCode = response.code();
-
-            if (response.code() != 200) {
-                error = NotificationRequestError.get(statusCode);
-                contentBody = response.body() != null ? response.body().string() : null;
-            }
+            return parseResponse(response);
         } catch (Throwable t) {
-            cause = t;
+            return new NotificationResponse(null, -1, null, t);
         } finally {
             if (response != null) {
                 response.body().close();
             }
         }
-
-        return new NotificationResponse(error, statusCode, contentBody, cause);
     }
 
-    @Override
-    public void start() throws IOException {
+    protected NotificationResponse parseResponse(Response response) throws IOException {
+        String contentBody = null;
+        int statusCode = response.code();
 
-    }
+        NotificationRequestError error = null;
 
-    @Override
-    public void shutdown() throws Exception {
+        if (response.code() != 200) {
+            error = NotificationRequestError.get(statusCode);
+            contentBody = response.body() != null ? response.body().string() : null;
+        }
 
+        return new NotificationResponse(error, statusCode, contentBody, null);
     }
 }

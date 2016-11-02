@@ -28,32 +28,67 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2;
-
-import java.util.HashMap;
-import java.util.Map;
+package com.clevertap.apns;
 
 /**
- * A collection of all the HTTP status codes returned by Apple.
+ * A wrapper around possible responses from the push gateway.
  */
-public enum NotificationRequestError {
-    BadRequest(400), CertificateError(403), BadMethod(405), DeviceTokenInactiveForTopic(410),
-    PayloadTooLarge(413), TooManyRequestsForToken(429), InternalServerError(500), ServerUnavailable(503);
-    public final int errorCode;
+public class NotificationResponse {
+    private final NotificationRequestError error;
+    private final int httpStatusCode;
+    private final String responseBody;
+    private final Throwable cause;
 
-    NotificationRequestError(int errorCode) {
-        this.errorCode = errorCode;
+    public NotificationResponse(NotificationRequestError error, int httpStatusCode, String responseBody, Throwable cause) {
+        this.error = error;
+        this.httpStatusCode = httpStatusCode;
+        this.responseBody = responseBody;
+        this.cause = cause;
     }
 
-    private static Map<Integer, NotificationRequestError> errorMap = new HashMap<>();
-
-    static {
-        for (NotificationRequestError notificationRequestError : NotificationRequestError.values()) {
-            errorMap.put(notificationRequestError.errorCode, notificationRequestError);
-        }
+    /**
+     * Returns the throwable from the underlying HttpClient.
+     *
+     * @return The throwable
+     */
+    public Throwable getCause() {
+        return cause;
     }
 
-    public static NotificationRequestError get(int errorCode) {
-        return errorMap.get(errorCode);
+    /**
+     * Returns the error.
+     *
+     * @return The error (null if no error)
+     */
+    public NotificationRequestError getError() {
+        return error;
+    }
+
+    /**
+     * Returns the real HTTP status code.
+     *
+     * @return The HTTP status code
+     */
+    public int getHttpStatusCode() {
+        return httpStatusCode;
+    }
+
+    /**
+     * Returns the content body (null for a successful response).
+     *
+     * @return The content body (null for a successful response)
+     */
+    public String getResponseBody() {
+        return responseBody;
+    }
+
+    @Override
+    public String toString() {
+        return "NotificationResponse{" +
+                "error=" + error +
+                ", httpStatusCode=" + httpStatusCode +
+                ", responseBody='" + responseBody + '\'' +
+                ", cause=" + cause +
+                '}';
     }
 }

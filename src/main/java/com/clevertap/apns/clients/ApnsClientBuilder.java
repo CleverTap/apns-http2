@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2.clients;
+package com.clevertap.apns.clients;
 
-import com.clevertap.jetty.apns.http2.ApnsClient;
+import com.clevertap.apns.ApnsClient;
 import okhttp3.ConnectionPool;
 
 import java.io.IOException;
@@ -40,7 +40,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.concurrent.Semaphore;
 
 /**
  * A builder to build an APNS client.
@@ -51,19 +50,14 @@ public class ApnsClientBuilder {
     private String password;
 
     private boolean asynchronous = false;
-    private int maxQueuedNotifications = 2000;
-    private Semaphore semaphore;
     private String defaultTopic = null;
 
-    private boolean useOkHttp3 = false;
     private ConnectionPool connectionPool;
+    private String apnsAuthKey;
+    private String teamID;
+    private String keyID;
 
-    public ApnsClientBuilder withOkHttp3() {
-        useOkHttp3 = true;
-        return this;
-    }
-
-    public ApnsClientBuilder withOkHttp3ConnectionPool(ConnectionPool connectionPool) {
+    public ApnsClientBuilder withConnectionPool(ConnectionPool connectionPool) {
         this.connectionPool = connectionPool;
         return this;
     }
@@ -75,6 +69,21 @@ public class ApnsClientBuilder {
 
     public ApnsClientBuilder withPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public ApnsClientBuilder withApnsAuthKey(String apnsAuthKey) {
+        this.apnsAuthKey = apnsAuthKey;
+        return this;
+    }
+
+    public ApnsClientBuilder withTeamID(String teamID) {
+        this.teamID = teamID;
+        return this;
+    }
+
+    public ApnsClientBuilder withKeyID(String keyID) {
+        this.keyID = keyID;
         return this;
     }
 
@@ -104,18 +113,8 @@ public class ApnsClientBuilder {
         return this;
     }
 
-    public ApnsClientBuilder withSemaphore(Semaphore semaphore) {
-        this.semaphore = semaphore;
-        return this;
-    }
-
     public ApnsClientBuilder withDefaultTopic(String defaultTopic) {
         this.defaultTopic = defaultTopic;
-        return this;
-    }
-
-    public ApnsClientBuilder withMaxQueuedNotifications(int maxQueuedNotifications) {
-        this.maxQueuedNotifications = maxQueuedNotifications;
         return this;
     }
 
@@ -123,21 +122,21 @@ public class ApnsClientBuilder {
             NoSuchAlgorithmException, KeyStoreException, IOException,
             UnrecoverableKeyException, KeyManagementException {
 
-        if (certificate == null) throw new CertificateException("Certificate cannot be null");
-
-        if (useOkHttp3) {
-            return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, connectionPool);
-        }
-
-        if (asynchronous) {
-            if (semaphore == null) {
-                semaphore = new Semaphore(maxQueuedNotifications);
+        if (certificate != null) {
+            if (asynchronous) {
+                return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, connectionPool);
+            } else {
+                return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, connectionPool);
             }
-
-            return new AsyncApnsClient(certificate, password,
-                    production, maxQueuedNotifications, semaphore, defaultTopic);
+        } else if (keyID != null && teamID != null && apnsAuthKey != null) {
+            if (asynchronous) {
+                return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, connectionPool);
+            } else {
+                return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, connectionPool);
+            }
         } else {
-            return new SyncApnsClient(certificate, password, production, defaultTopic);
+            throw new IllegalArgumentException("Either the token credentials (team ID, key ID, and the private key) " +
+                    "or a certificate must be provided");
         }
     }
 }

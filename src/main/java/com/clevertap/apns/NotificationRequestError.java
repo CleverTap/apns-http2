@@ -28,26 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.clevertap.jetty.apns.http2;
+package com.clevertap.apns;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * An interface for handling responses to notification requests.
+ * A collection of all the HTTP status codes returned by Apple.
  */
-public interface NotificationResponseListener {
-    /**
-     * Signals a successful notification.
-     * <p>
-     * Note: For a successful request, the response body is empty.
-     *
-     * @param notification The notification that succeeded
-     */
-    void onSuccess(Notification notification);
+public enum NotificationRequestError {
+    BadRequest(400), BadMethod(405), DeviceTokenInactiveForTopic(410),
+    PayloadTooLarge(413), TooManyRequestsForToken(429), InternalServerError(500),
+    ServerUnavailable(503), InvalidProviderToken(403);
+    public final int errorCode;
 
-    /**
-     * Signals a failed notification.
-     *
-     * @param notification The notification that failed
-     * @param response     The notification response
-     */
-    void onFailure(Notification notification, NotificationResponse response);
+    NotificationRequestError(int errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    private static Map<Integer, NotificationRequestError> errorMap = new HashMap<>();
+
+    static {
+        for (NotificationRequestError notificationRequestError : NotificationRequestError.values()) {
+            errorMap.put(notificationRequestError.errorCode, notificationRequestError);
+        }
+    }
+
+    public static NotificationRequestError get(int errorCode) {
+        return errorMap.get(errorCode);
+    }
 }
