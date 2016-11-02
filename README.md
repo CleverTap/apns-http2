@@ -1,36 +1,50 @@
 # apns-http2
-A Java library for sending notifications via APNS using Apple's new HTTP/2 API. This library uses Jetty's Http2Client (from Jetty 9.3.7).
+A Java library for sending notifications via APNS using Apple's new HTTP/2 API.
+This library uses OkHttp.
+Previous versions included support for Jetty's client,
+however, we've removed that due to instability of the Jetty client.
 
-**Note:** Ensure that you have Jetty's ALPN JAR in your boot classpath. [See here for more information](http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html). This is required until Java 9 is released, as Java 8 does not have native support for HTTP/2.
+**Note:** Ensure that you have Jetty's ALPN JAR (OkHttp requires it) in your boot classpath. [See here for more information](http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html).
+This is required until Java 9 is released, as Java 8 does not have native support for HTTP/2.
 
 ## Installation
 - Clone this repository, and add it as a dependent maven project
 
 ## Usage
 
-### Create an instance of the client using your certificate
+### Create a client
+
+#### Using provider certificates
 
 ```
 FileInputStream cert = new FileInputStream("/path/to/certificate.p12");
 final ApnsClient client = new ApnsClientBuilder()
-                .withProductionGateway()
-                .inAsynchronousMode()
-                .withCertificate(cert)
-                .withPassword("")
-                .build();
+        .withProductionGateway()
+        .inSynchronousMode()
+        .withCertificate(cert)
+        .withPassword("")
+        .withDefaultTopic("<your app's topic>")
+        .build();
 ```
 
-### Start the client
+#### Using provider authentication tokens
+```
+final ApnsClient client = new ApnsClientBuilder()
+        .inSynchronousMode()
+        .withProductionGateway()
+        .withApnsAuthKey("<your APNS auth key, excluding -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY----->")
+        .withTeamID("<your team ID here>")
+        .withKeyID("<your key ID here, present in the auth key file name>")
+        .withDefaultTopic("<your app's topic>")
+        .build();
+```
+
+### Build your notification
+The notification builder supports several other features (such as badge, category, etc).
+The minimal is shown below:
 
 ```
-client.start();
-```
-
-### Use Notification.Builder to build your notification
-The notification builder supports several other features (such as badge, category, etc). The minimal is shown below:
-
-```
-Notification n = new Notification.Builder("my token")
+Notification n = new Notification.Builder("<the device token>")
         .alertBody("Hello").build();
 
 ```

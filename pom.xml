@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.clevertap</groupId>
-    <artifactId>jetty-http2-apns</artifactId>
-    <version>0.1-beta</version>
+    <artifactId>http2-apns</artifactId>
+    <version>1.0</version>
 
     <dependencies>
         <dependency>
