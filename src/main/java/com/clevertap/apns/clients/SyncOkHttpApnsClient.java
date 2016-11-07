@@ -69,18 +69,34 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @param keyID          The key ID (retrieved from the file name)
      * @param production     Whether to use the production endpoint or the sandbox endpoint
      * @param defaultTopic   A default topic (can be changed per message)
-     * @param connectionPool A connection pool to use. If null, a new one will be generated
+     * @param clientBuilder  An OkHttp client builder, possibly pre-initialized, to build the actual client
      */
     public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
-                                String defaultTopic, ConnectionPool connectionPool) {
+                                String defaultTopic, OkHttpClient.Builder clientBuilder) {
         this.apnsAuthKey = apnsAuthKey;
         this.teamID = teamID;
         this.keyID = keyID;
-        client = getBuilder(connectionPool).build();
+        client = clientBuilder.build();
 
         this.defaultTopic = defaultTopic;
 
         gateway = production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX;
+    }
+
+    /**
+     * Creates a new client which uses token authentication API.
+     *
+     * @param apnsAuthKey    The private key - exclude -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----
+     * @param teamID         The team ID
+     * @param keyID          The key ID (retrieved from the file name)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param connectionPool A connection pool to use. If null, a new one will be generated
+     */
+    public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
+                                String defaultTopic, ConnectionPool connectionPool) {
+		
+        this(apnsAuthKey, teamID, keyID, production, defaultTopic, createDefaultBuilder(connectionPool));
     }
 
     /**
@@ -91,10 +107,10 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @param password       The password (if required, else null)
      * @param production     Whether to use the production endpoint or the sandbox endpoint
      * @param defaultTopic   A default topic (can be changed per message)
-     * @param connectionPool A connection pool to use. If null, a new one will be generated
+     * @param clientBuilder  An OkHttp client builder, possibly pre-initialized, to build the actual client
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
-                                String defaultTopic, ConnectionPool connectionPool)
+                                String defaultTopic, OkHttpClient.Builder builder)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException {
 
@@ -118,7 +134,6 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
-        OkHttpClient.Builder builder = getBuilder(connectionPool);
         builder.sslSocketFactory(sslSocketFactory);
 
         client = builder.build();
@@ -127,7 +142,32 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         gateway = production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX;
     }
 
-    private static OkHttpClient.Builder getBuilder(ConnectionPool connectionPool) {
+    /**
+     * Creates a new client and automatically loads the key store
+     * with the push certificate read from the input stream.
+     *
+     * @param certificate    The client certificate to be used
+     * @param password       The password (if required, else null)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param connectionPool A connection pool to use. If null, a new one will be generated
+     */
+    public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
+                                String defaultTopic, ConnectionPool connectionPool)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+		
+		this(certificate, password, production, defaultTopic, createDefaultBuilder(connectionPool));
+	}
+	
+	/**
+	 * Creates a default builder that can be customized later and then passed to one of
+	 * the constructors taking a builder instance. The constructors that don't take
+	 * builders themselves use this method internally to create their client builders.
+     * @param connectionPool A connection pool to use. If null, a new one will be generated
+	 * @return a new OkHttp client builder, intialized with default settings.
+	 */
+    public static OkHttpClient.Builder createDefaultBuilder(ConnectionPool connectionPool) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         builder.connectTimeout(10, TimeUnit.SECONDS)
