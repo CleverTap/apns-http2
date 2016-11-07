@@ -208,6 +208,11 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         }
     }
 
+    @Override
+    public OkHttpClient getHttpClient() {
+        return client;
+    }
+
     protected NotificationResponse parseResponse(Response response) throws IOException {
         String contentBody = null;
         int statusCode = response.code();
