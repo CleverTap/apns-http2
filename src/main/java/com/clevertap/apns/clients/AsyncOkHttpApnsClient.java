@@ -60,6 +60,18 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
         super(certificate, password, production, defaultTopic, connectionPool);
     }
 
+    public AsyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID,
+                                 boolean production, String defaultTopic, OkHttpClient.Builder builder) {
+        super(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+    }
+
+    public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
+                                 String defaultTopic, OkHttpClient.Builder builder)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+        super(certificate, password, production, defaultTopic, builder);
+    }
+
     @Override
     public NotificationResponse push(Notification notification) {
         throw new UnsupportedOperationException("Synchronous requests are not supported by this client");

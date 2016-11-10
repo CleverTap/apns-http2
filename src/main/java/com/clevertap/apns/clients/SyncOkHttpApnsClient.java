@@ -96,7 +96,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
     public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
                                 String defaultTopic, ConnectionPool connectionPool) {
 		
-        this(apnsAuthKey, teamID, keyID, production, defaultTopic, createDefaultBuilder(connectionPool));
+        this(apnsAuthKey, teamID, keyID, production, defaultTopic, getBuilder(connectionPool));
     }
 
     /**
@@ -157,7 +157,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException {
 		
-		this(certificate, password, production, defaultTopic, createDefaultBuilder(connectionPool));
+		this(certificate, password, production, defaultTopic, getBuilder(connectionPool));
 	}
 	
 	/**
@@ -167,15 +167,11 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @param connectionPool A connection pool to use. If null, a new one will be generated
 	 * @return a new OkHttp client builder, intialized with default settings.
 	 */
-    public static OkHttpClient.Builder createDefaultBuilder(ConnectionPool connectionPool) {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-
-        builder.connectTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS);
-
-        connectionPool = connectionPool == null ? new ConnectionPool(10, 10, TimeUnit.MINUTES) : connectionPool;
-        builder.connectionPool(connectionPool);
+    private static OkHttpClient.Builder getBuilder(ConnectionPool connectionPool) {
+        OkHttpClient.Builder builder = ApnsClientBuilder.createDefaultOkHttpClientBuilder();
+		if(connectionPool != null) {
+			builder.connectionPool(connectionPool);
+		}
 
         return builder;
     }
