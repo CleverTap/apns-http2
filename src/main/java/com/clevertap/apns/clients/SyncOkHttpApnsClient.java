@@ -188,6 +188,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
     protected final Request buildRequest(Notification notification) {
         final String topic = notification.getTopic() != null ? notification.getTopic() : defaultTopic;
+        final String collapseId = notification.getCollapseId();
         Request.Builder rb = new Request.Builder()
                 .url(gateway + "/3/device/" + notification.getToken())
 
@@ -206,6 +207,10 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         if (topic != null) {
             rb.header("apns-topic", topic);
+        }
+
+        if (collapseId != null) {
+            rb.header("apns-collapse-id", collapseId);
         }
 
         if (keyID != null && teamID != null && apnsAuthKey != null) {
