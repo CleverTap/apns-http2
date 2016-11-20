@@ -44,6 +44,7 @@ public class Notification {
     private final String payload;
     private final String token;
     private final String topic;
+    private final String collapseId;
 
     /**
      * Constructs a new Notification with a payload and token.
@@ -52,10 +53,11 @@ public class Notification {
      * @param token   The device token
      * @param topic   The topic for this notification
      */
-    protected Notification(String payload, String token, String topic) {
+    protected Notification(String payload, String token, String topic, String collapseId) {
         this.payload = payload;
         this.token = token;
         this.topic = topic;
+        this.collapseId = collapseId;
     }
 
     /**
@@ -65,6 +67,15 @@ public class Notification {
      */
     public String getTopic() {
         return topic;
+    }
+
+    /**
+     * Retrieves the collapseId.
+     *
+     * @return The collapseId
+     */
+    public String getCollapseId() {
+        return collapseId;
     }
 
     /**
@@ -94,6 +105,7 @@ public class Notification {
         private final HashMap<String, Object> root, aps, alert;
         private final String token;
         private String topic = null;
+        private String collapseId = null;
 
         /**
          * Creates a new notification builder.
@@ -165,6 +177,11 @@ public class Notification {
             return this;
         }
 
+        public Builder collapseId(String collapseId) {
+            this.collapseId = collapseId;
+            return this;
+        }
+
         public int size() {
             try {
                 return build().getPayload().getBytes("UTF-8").length;
@@ -189,7 +206,7 @@ public class Notification {
                 // Should not happen
                 throw new RuntimeException(e);
             }
-            return new Notification(payload, token, topic);
+            return new Notification(payload, token, topic, collapseId);
         }
     }
 }
