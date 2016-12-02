@@ -46,6 +46,10 @@ public final class JWT {
      * @param keyID  The key ID (found when generating your private key)
      * @param secret The private key (excluding the header and the footer)
      * @return The resulting token, which will be valid for one hour
+     * @throws InvalidKeySpecException  if the key is incorrect
+     * @throws NoSuchAlgorithmException if the key algo failed to load
+     * @throws InvalidKeyException      if the key is invalid
+     * @throws SignatureException       if this signature object is not initialized properly.
      */
     public static String getToken(final String teamID, final String keyID, final String secret)
             throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -62,6 +66,14 @@ public final class JWT {
 
     /**
      * Adopted from http://stackoverflow.com/a/20322894/2274894
+     *
+     * @param secret The secret
+     * @param data   The data to be encoded
+     * @return The encoded token
+     * @throws InvalidKeySpecException  if the key is incorrect
+     * @throws NoSuchAlgorithmException if the key algo failed to load
+     * @throws InvalidKeyException      if the key is invalid
+     * @throws SignatureException       if this signature object is not initialized properly.
      */
     private static String ES256(final String secret, final String data)
             throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {

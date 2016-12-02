@@ -55,6 +55,12 @@ public class CertificateUtils {
      * @param certificate The certificate
      * @param password    The password
      * @return A map containing the components of the subject
+     *
+     * @throws CertificateException     if any of the certificates in the keystore could not be loaded
+     * @throws NoSuchAlgorithmException if the algorithm used to check the integrity of the keystore cannot be found
+     * @throws IOException              if there is an I/O or format problem with the keystore data,
+     *                                  if a password is required but not given, or if the given password was incorrect
+     * @throws KeyStoreException        if no Provider supports a KeyStoreSpi implementation for the specified type
      */
     public static Map<String, String> splitCertificateSubject(InputStream certificate, String password)
             throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
@@ -68,6 +74,11 @@ public class CertificateUtils {
      * @param certificate The certificate
      * @param password    The password
      * @return The certificate
+     * @throws CertificateException     if any of the certificates in the keystore could not be loaded
+     * @throws NoSuchAlgorithmException if the algorithm used to check the integrity of the keystore cannot be found
+     * @throws IOException              if there is an I/O or format problem with the keystore data,
+     *                                  if a password is required but not given, or if the given password was incorrect
+     * @throws KeyStoreException        if no Provider supports a KeyStoreSpi implementation for the specified type
      */
     public static X509Certificate getCertificate(InputStream certificate, String password)
             throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
@@ -105,6 +116,7 @@ public class CertificateUtils {
     /**
      * Checks a certificate for it's validity, as well as that it's a push certificate.
      *
+     * @param production  Validate the certificate environment, if required
      * @param certificate The certificate to be validated
      * @throws CertificateException When the certificate is not valid, or if it's expired,
      *                              or if it's not a push certificate

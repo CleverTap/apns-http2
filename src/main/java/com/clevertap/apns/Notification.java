@@ -49,9 +49,10 @@ public class Notification {
     /**
      * Constructs a new Notification with a payload and token.
      *
-     * @param payload The JSON body (which is used for the request)
-     * @param token   The device token
-     * @param topic   The topic for this notification
+     * @param payload    The JSON body (which is used for the request)
+     * @param token      The device token
+     * @param topic      The topic for this notification
+     * @param collapseId The collapse ID
      */
     protected Notification(String payload, String token, String topic, String collapseId) {
         this.payload = payload;
