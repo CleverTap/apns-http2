@@ -6,7 +6,11 @@
 
     <groupId>com.clevertap</groupId>
     <artifactId>http2-apns</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
+    <url>https://github.com/CleverTap/apns-http2</url>
 
     <dependencies>
         <dependency>
@@ -47,4 +51,26 @@
             </plugin>
         </plugins>
     </build>
+
+    <scm>
+        <connection>scm:git:git://github.com/CleverTap/apns-http2.git</connection>
+        <developerConnection>scm:git:ssh://github.com:CleverTap/apns-http2.git</developerConnection>
+        <url>http://github.com/CleverTap/apns-http2/tree/master</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Jude Pereira</name>
+            <email>jude@clevertap.com</email>
+            <organization>CleverTap</organization>
+            <organizationUrl>https://clevertap.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The BSD 3-Clause License</name>
+            <url>https://opensource.org/licenses/BSD-3-Clause</url>
+        </license>
+    </licenses>
 </project>
