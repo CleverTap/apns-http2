@@ -94,7 +94,18 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                final NotificationResponse nr = parseResponse(response);
+                final NotificationResponse nr;
+
+                try {
+                    nr = parseResponse(response);
+                } catch (Throwable t) {
+                    nrl.onFailure(notification, new NotificationResponse(null, -1, null, t));
+                    return;
+                } finally {
+                    if (response != null) {
+                        response.body().close();
+                    }
+                }
 
                 if (nr.getHttpStatusCode() == 200) {
                     nrl.onSuccess(notification);
