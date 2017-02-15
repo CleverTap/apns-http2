@@ -107,6 +107,7 @@ public class Notification {
         private final String token;
         private String topic = null;
         private String collapseId = null;
+        private boolean contentAvailable = false;
 
         /**
          * Creates a new notification builder.
@@ -132,6 +133,21 @@ public class Notification {
 
         public Builder mutableContent() {
             return this.mutableContent(true);
+        }
+
+        public Builder contentAvailable(boolean contentAvailable) {
+            if (contentAvailable) {
+                aps.put("content-available", 1);
+            } else {
+                aps.remove("content-available");
+            }
+
+            this.contentAvailable = contentAvailable;
+            return this;
+        }
+
+        public Builder contentAvailable() {
+            return this.contentAvailable(true);
         }
 
         public Builder alertBody(String body) {
@@ -200,6 +216,14 @@ public class Notification {
         public Notification build() {
             root.put("aps", aps);
             aps.put("alert", alert);
+
+            // Clean up the aps dictionary for content-available notifications
+            if (contentAvailable) {
+                aps.remove("alert");
+                aps.remove("sound");
+                aps.remove("badge");
+            }
+
             final String payload;
             try {
                 payload = mapper.writeValueAsString(root);
