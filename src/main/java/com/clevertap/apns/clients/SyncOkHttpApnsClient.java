@@ -43,6 +43,7 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.util.UUID;
 
 /**
  * A wrapper around OkHttp's http client to send out notifications using Apple's HTTP/2 API.
@@ -203,9 +204,9 @@ public class SyncOkHttpApnsClient implements ApnsClient {
     protected final Request buildRequest(Notification notification) {
         final String topic = notification.getTopic() != null ? notification.getTopic() : defaultTopic;
         final String collapseId = notification.getCollapseId();
-        final String uuid = notification.getUuid();
-        final Long expiration = notification.getExpiration();
-        final Integer priority = notification.getPriority();
+        final UUID uuid = notification.getUuid();
+        final long expiration = notification.getExpiration();
+        final Notification.Priority priority = notification.getPriority();
         Request.Builder rb = new Request.Builder()
                 .url(gateway + "/3/device/" + notification.getToken())
 
@@ -231,15 +232,15 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         }
 
         if (uuid != null) {
-            rb.header("apns-id",uuid);
+            rb.header("apns-id",uuid.toString());
         }
 
-        if (expiration != null) {
-            rb.header("apns-expiration", expiration.toString());
+        if (expiration > -1) {
+            rb.header("apns-expiration", String.valueOf(expiration));
         }
 
         if (priority != null) {
-            rb.header("apns-priority",priority.toString());
+            rb.header("apns-priority",String.valueOf(priority.getCode()));
         }
 
         if (keyID != null && teamID != null && apnsAuthKey != null) {

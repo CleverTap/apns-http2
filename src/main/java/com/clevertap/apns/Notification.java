@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * An entity containing the payload and the token.
@@ -45,9 +46,24 @@ public class Notification {
     private final String token;
     private final String topic;
     private final String collapseId;
-    private final Long expiration;
-    private final Integer priority;
-    private final String uuid;
+    private final long expiration;
+    private final Priority priority;
+    private final UUID uuid;
+
+    public enum Priority {
+        IMMEDIATE(10),
+        POWERCONSIDERATION(5);
+
+        private final int code;
+
+        private Priority(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return this.code;
+        }
+    }
 
 
     /**
@@ -60,7 +76,7 @@ public class Notification {
      * @param priority  The priority of the notification (10 or 5)
      * @param uuid     A canonical UUID that identifies the notification
      */
-    protected Notification(String payload, String token, String topic, String collapseId, Long expiration, Integer priority, String uuid) {
+    protected Notification(String payload, String token, String topic, String collapseId, long expiration, Priority priority, UUID uuid) {
         this.payload = payload;
         this.token = token;
         this.topic = topic;
@@ -110,11 +126,11 @@ public class Notification {
         return expiration;
     }
 
-    public Integer getPriority() {
+    public Priority getPriority() {
         return priority;
     }
 
-    public String getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
@@ -129,9 +145,9 @@ public class Notification {
         private String topic = null;
         private String collapseId = null;
         private boolean contentAvailable = false;
-        private Long expiration;
-        private Integer priority;
-        private String uuid;
+        private long expiration;
+        private Priority priority;
+        private UUID uuid;
 
         /**
          * Creates a new notification builder.
@@ -223,17 +239,17 @@ public class Notification {
             return this;
         }
 
-        public Builder expiration(Long expiration) {
+        public Builder expiration(long expiration) {
             this.expiration = expiration;
             return this;
         }
 
-        public Builder uuid(String uuid) {
+        public Builder uuid(UUID uuid) {
             this.uuid = uuid;
             return this;
         }
 
-        public Builder priority(Integer priority) {
+        public Builder priority(Priority priority) {
             this.priority = priority;
             return this;
         }
