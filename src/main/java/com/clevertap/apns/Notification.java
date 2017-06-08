@@ -122,7 +122,7 @@ public class Notification {
         return token;
     }
 
-    public Long getExpiration() {
+    public long getExpiration() {
         return expiration;
     }
 
@@ -145,7 +145,7 @@ public class Notification {
         private String topic = null;
         private String collapseId = null;
         private boolean contentAvailable = false;
-        private long expiration;
+        private long expiration = -1; // defaults to -1, as 0 is a valid value (included only if greater than -1)
         private Priority priority;
         private UUID uuid;
 
