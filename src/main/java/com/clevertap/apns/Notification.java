@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * An entity containing the payload and the token.
@@ -45,20 +46,44 @@ public class Notification {
     private final String token;
     private final String topic;
     private final String collapseId;
+    private final long expiration;
+    private final Priority priority;
+    private final UUID uuid;
+
+    public enum Priority {
+        IMMEDIATE(10),
+        POWERCONSIDERATION(5);
+
+        private final int code;
+
+        private Priority(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return this.code;
+        }
+    }
+
 
     /**
      * Constructs a new Notification with a payload and token.
-     *
      * @param payload    The JSON body (which is used for the request)
      * @param token      The device token
      * @param topic      The topic for this notification
      * @param collapseId The collapse ID
+     * @param expiration A UNIX epoch date expressed in seconds (UTC)
+     * @param priority  The priority of the notification (10 or 5)
+     * @param uuid     A canonical UUID that identifies the notification
      */
-    protected Notification(String payload, String token, String topic, String collapseId) {
+    protected Notification(String payload, String token, String topic, String collapseId, long expiration, Priority priority, UUID uuid) {
         this.payload = payload;
         this.token = token;
         this.topic = topic;
         this.collapseId = collapseId;
+        this.expiration = expiration;
+        this.priority = priority;
+        this.uuid = uuid;
     }
 
     /**
@@ -97,6 +122,18 @@ public class Notification {
         return token;
     }
 
+    public Long getExpiration() {
+        return expiration;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
     /**
      * Builds a notification to be sent to APNS.
      */
@@ -108,6 +145,9 @@ public class Notification {
         private String topic = null;
         private String collapseId = null;
         private boolean contentAvailable = false;
+        private long expiration;
+        private Priority priority;
+        private UUID uuid;
 
         /**
          * Creates a new notification builder.
@@ -199,6 +239,21 @@ public class Notification {
             return this;
         }
 
+        public Builder expiration(long expiration) {
+            this.expiration = expiration;
+            return this;
+        }
+
+        public Builder uuid(UUID uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+
+        public Builder priority(Priority priority) {
+            this.priority = priority;
+            return this;
+        }
+
         public int size() {
             try {
                 return build().getPayload().getBytes("UTF-8").length;
@@ -231,7 +286,7 @@ public class Notification {
                 // Should not happen
                 throw new RuntimeException(e);
             }
-            return new Notification(payload, token, topic, collapseId);
+            return new Notification(payload, token, topic, collapseId, expiration, priority, uuid);
         }
     }
 }
