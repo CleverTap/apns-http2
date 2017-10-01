@@ -21,8 +21,10 @@ This is required until Java 9 is released, as Java 8 does not have native suppor
   <type>pom</type>
 </dependency>
 ```
-- Gradle
-`compile 'com.clevertap.apns:apns-http2:1.0.2'`
+- Gradle  
+```
+compile 'com.clevertap.apns:apns-http2:1.0.2'
+```
 
 ## Usage
 
