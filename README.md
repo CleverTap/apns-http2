@@ -12,6 +12,17 @@ This is required until Java 9 is released, as Java 8 does not have native suppor
 
 ## Installation
 - Clone this repository, and add it as a dependent maven project
+- Maven
+```
+<dependency>
+  <groupId>com.clevertap.apns</groupId>
+  <artifactId>apns-http2</artifactId>
+  <version>1.0.2</version>
+  <type>pom</type>
+</dependency>
+```
+- Gradle
+`compile 'com.clevertap.apns:apns-http2:1.0.2'`
 
 ## Usage
 
