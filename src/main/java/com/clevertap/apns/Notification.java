@@ -68,13 +68,14 @@ public class Notification {
 
     /**
      * Constructs a new Notification with a payload and token.
+     *
      * @param payload    The JSON body (which is used for the request)
      * @param token      The device token
      * @param topic      The topic for this notification
      * @param collapseId The collapse ID
      * @param expiration A UNIX epoch date expressed in seconds (UTC)
-     * @param priority  The priority of the notification (10 or 5)
-     * @param uuid     A canonical UUID that identifies the notification
+     * @param priority   The priority of the notification (10 or 5)
+     * @param uuid       A canonical UUID that identifies the notification
      */
     protected Notification(String payload, String token, String topic, String collapseId, long expiration, Priority priority, UUID uuid) {
         this.payload = payload;
@@ -144,7 +145,6 @@ public class Notification {
         private final String token;
         private String topic = null;
         private String collapseId = null;
-        private boolean contentAvailable = false;
         private long expiration = -1; // defaults to -1, as 0 is a valid value (included only if greater than -1)
         private Priority priority;
         private UUID uuid;
@@ -182,7 +182,6 @@ public class Notification {
                 aps.remove("content-available");
             }
 
-            this.contentAvailable = contentAvailable;
             return this;
         }
 
@@ -271,13 +270,6 @@ public class Notification {
         public Notification build() {
             root.put("aps", aps);
             aps.put("alert", alert);
-
-            // Clean up the aps dictionary for content-available notifications
-            if (contentAvailable) {
-                aps.remove("alert");
-                aps.remove("sound");
-                aps.remove("badge");
-            }
 
             final String payload;
             try {
