@@ -17,13 +17,13 @@ This is required until Java 9 is released, as Java 8 does not have native suppor
 <dependency>
   <groupId>com.clevertap.apns</groupId>
   <artifactId>apns-http2</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <type>pom</type>
 </dependency>
 ```
 - Gradle  
 ```
-compile 'com.clevertap.apns:apns-http2:1.0.2'
+compile 'com.clevertap.apns:apns-http2:1.0.3'
 ```
 
 ## Usage
