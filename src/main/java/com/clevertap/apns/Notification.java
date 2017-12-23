@@ -198,6 +198,11 @@ public class Notification {
             alert.put("title", title);
             return this;
         }
+        
+        public Builder localizedMessage(String key,Object value) {
+        	alert.put(key, value);
+        	return this;
+        }
 
         public Builder sound(String sound) {
             if (sound != null) {
