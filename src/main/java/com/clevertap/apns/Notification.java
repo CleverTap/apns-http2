@@ -200,7 +200,8 @@ public class Notification {
         }
         
         public Builder localizedMessage(String key,Object value) {
-        	alert.put(key, value);
+        	alert.put("loc-key", key);
+        	alert.put("loc-args", value);
         	return this;
         }
 
