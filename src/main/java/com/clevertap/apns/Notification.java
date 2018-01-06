@@ -30,7 +30,6 @@
 
 package com.clevertap.apns;
 
-import com.clevertap.apns.clients.AsyncOkHttpApnsClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,7 +51,7 @@ public class Notification {
 
     public enum Priority {
         IMMEDIATE(10),
-        POWERCONSIDERATION(5);
+        POWER_CONSIDERATION(5);
 
         private final int code;
 
@@ -263,7 +262,6 @@ public class Notification {
 
         /**
          * Builds the notification.
-         * Also see {@link AsyncOkHttpApnsClient#push(Notification, NotificationResponseListener)}
          *
          * @return The notification
          */

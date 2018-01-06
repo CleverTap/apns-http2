@@ -31,9 +31,7 @@
 package com.clevertap.apns.clients;
 
 import com.clevertap.apns.ApnsClient;
-import okhttp3.ConnectionPool;
-import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
+import jdk.incubator.http.HttpClient;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +40,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A builder to build an APNS client.
@@ -55,45 +52,36 @@ public class ApnsClientBuilder {
     private boolean asynchronous = false;
     private String defaultTopic = null;
 
-    private OkHttpClient.Builder builder;
-    private ConnectionPool connectionPool;
+    private HttpClient.Builder builder;
     private String apnsAuthKey;
     private String teamID;
     private String keyID;
 
     /**
-     * Creates a default OkHttp client builder that can be customized later and
+     * Creates a default {@link HttpClient} builder that can be customized later and
      * then passed to one of the constructors taking a builder instance. The
      * constructors that don't take builders themselves use this method
-     * internally to create their client builders. Note: The returned Builder
-     * also has a default connection pool configured. You can replace that pool
-     * by calling {@link Builder#connectionPool(okhttp3.ConnectionPool) }.
+     * internally to create their client builders.
      *
-     * @return a new OkHttp client builder, intialized with default settings.
+     * @return a new {@link HttpClient} builder, initialized with default settings.
      */
-    public static OkHttpClient.Builder createDefaultOkHttpClientBuilder() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(10, TimeUnit.SECONDS).writeTimeout(10, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS);
-        builder.connectionPool(new ConnectionPool(10, 10, TimeUnit.MINUTES));
-        return builder;
+    public static HttpClient.Builder createDefaultHttpClientBuilder() {
+        // TODO: 04/01/2018 connection pooling and timeouts
+        return HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2);
     }
 
     /**
-     * Replaces the default OkHttp client builder with this one. The default
-     * builder is created internally with {@link #createDefaultOkHttpClientBuilder() }.
+     * Replaces the default HttpClient builder with this one. The default
+     * builder is created internally with {@link #createDefaultHttpClientBuilder() }.
      * A custom builder can also be created by calling that method explicitly,
      * customizing the builder and then passing it to this method.
      *
-     * @param clientBuilder An existing OkHttp client builder to be used as the base
+     * @param clientBuilder An existing HttpClient builder to be used as the base
      * @return this object
      */
-    public ApnsClientBuilder withOkHttpClientBuilder(OkHttpClient.Builder clientBuilder) {
+    public ApnsClientBuilder withHttpClientBuilder(HttpClient.Builder clientBuilder) {
         this.builder = clientBuilder;
-        return this;
-    }
-
-    public ApnsClientBuilder withConnectionPool(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
         return this;
     }
 
@@ -158,24 +146,20 @@ public class ApnsClientBuilder {
             UnrecoverableKeyException, KeyManagementException {
 
         if (builder == null) {
-            builder = createDefaultOkHttpClientBuilder();
-        }
-
-        if (connectionPool != null) {
-            builder.connectionPool(connectionPool);
+            builder = createDefaultHttpClientBuilder();
         }
 
         if (certificate != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder);
+                return new SyncApnsClient(certificate, password, production, defaultTopic, builder);
             } else {
-                return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder);
+                return new SyncApnsClient(certificate, password, production, defaultTopic, builder);
             }
         } else if (keyID != null && teamID != null && apnsAuthKey != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+                return new SyncApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
             } else {
-                return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+                return new SyncApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
             }
         } else {
             throw new IllegalArgumentException("Either the token credentials (team ID, key ID, and the private key) " +

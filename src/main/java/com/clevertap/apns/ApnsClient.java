@@ -30,7 +30,7 @@
 
 package com.clevertap.apns;
 
-import okhttp3.OkHttpClient;
+import jdk.incubator.http.HttpClient;
 
 /**
  * Interface for general purpose APNS clients.
@@ -65,10 +65,10 @@ public interface ApnsClient {
     NotificationResponse push(Notification notification);
 
     /**
-     * Returns the underlying OkHttpClient instance.
-     * This can be used for further customizations such as using proxies.
+     * Returns the underlying HttpClient instance.
+     * This can be used for further customizations.
      *
-     * @return The underlying OkHttpClient instance
+     * @return The underlying HttpClient instance
      */
-    OkHttpClient getHttpClient();
+    HttpClient getHttpClient();
 }
