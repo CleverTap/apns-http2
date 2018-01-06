@@ -151,13 +151,13 @@ public class ApnsClientBuilder {
 
         if (certificate != null) {
             if (asynchronous) {
-                return new SyncApnsClient(certificate, password, production, defaultTopic, builder);
+                return new AsyncApnsClient(certificate, password, production, defaultTopic, builder);
             } else {
                 return new SyncApnsClient(certificate, password, production, defaultTopic, builder);
             }
         } else if (keyID != null && teamID != null && apnsAuthKey != null) {
             if (asynchronous) {
-                return new SyncApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+                return new AsyncApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
             } else {
                 return new SyncApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
             }

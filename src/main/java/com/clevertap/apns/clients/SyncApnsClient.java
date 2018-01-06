@@ -51,7 +51,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -181,68 +180,68 @@ public class SyncApnsClient implements ApnsClient {
         throw new UnsupportedOperationException("Asynchronous requests are not supported by this client");
     }
 
-    @Override
-    public NotificationResponse push(Notification notification) {
+    protected HttpRequest buildRequest(Notification notification) throws Exception {
         final String topic = notification.getTopic() != null ? notification.getTopic() : defaultTopic;
         final String collapseId = notification.getCollapseId();
         final UUID uuid = notification.getUuid();
         final long expiration = notification.getExpiration();
         final Notification.Priority priority = notification.getPriority();
+        final byte[] payload = notification.getPayload().getBytes(StandardCharsets.UTF_8);
 
-        try {
-            final byte[] payload = notification.getPayload().getBytes(StandardCharsets.UTF_8);
+        final HttpRequest.Builder rb = HttpRequest
+                .newBuilder()
+                .POST(HttpRequest.BodyProcessor.fromByteArray(payload))
+                .uri(new URI(gateway + "/3/device/" + notification.getToken()))
+                .header("content-type", "application/json; charset=utf-8")
+                .header("content-length", String.valueOf(payload.length));
 
-            final HttpRequest.Builder rb = HttpRequest
-                    .newBuilder()
-                    .POST(HttpRequest.BodyProcessor.fromByteArray(payload))
-                    .uri(new URI(gateway + "/3/device/" + notification.getToken()))
-                    .header("content-type", "application/json; charset=utf-8")
-                    .header("content-length", String.valueOf(payload.length));
+        if (topic != null) {
+            rb.header("apns-topic", topic);
+        }
 
-            if (topic != null) {
-                rb.header("apns-topic", topic);
-            }
+        if (collapseId != null) {
+            rb.header("apns-collapse-id", collapseId);
+        }
 
-            if (collapseId != null) {
-                rb.header("apns-collapse-id", collapseId);
-            }
+        if (uuid != null) {
+            rb.header("apns-id", uuid.toString());
+        }
 
-            if (uuid != null) {
-                rb.header("apns-id", uuid.toString());
-            }
+        if (expiration > -1) {
+            rb.header("apns-expiration", String.valueOf(expiration));
+        }
 
-            if (expiration > -1) {
-                rb.header("apns-expiration", String.valueOf(expiration));
-            }
+        if (priority != null) {
+            rb.header("apns-priority", String.valueOf(priority.getCode()));
+        }
 
-            if (priority != null) {
-                rb.header("apns-priority", String.valueOf(priority.getCode()));
-            }
-
-            if (keyID != null && teamID != null && apnsAuthKey != null) {
-                // Generate a new JWT token if it's null, or older than 55 minutes
-                if (isJWTTokenStale()) {
-                    synchronized (this) {
-                        if (isJWTTokenStale()) {
-                            try {
-                                lastJWTTokenTS = System.currentTimeMillis();
-                                cachedJWTToken = JWT.getToken(teamID, keyID, apnsAuthKey);
-                            } catch (InvalidKeySpecException | NoSuchAlgorithmException
-                                    | SignatureException | InvalidKeyException e) {
-                                return new NotificationResponse(null, -1, null, e);
-                            }
-                        }
+        if (keyID != null && teamID != null && apnsAuthKey != null) {
+            // Generate a new JWT token if it's null, or older than 55 minutes
+            if (isJWTTokenStale()) {
+                synchronized (this) {
+                    if (isJWTTokenStale()) {
+                        lastJWTTokenTS = System.currentTimeMillis();
+                        cachedJWTToken = JWT.getToken(teamID, keyID, apnsAuthKey);
                     }
                 }
             }
+        }
 
-            rb.timeout(REQUEST_TIMEOUT);
+        rb.timeout(REQUEST_TIMEOUT);
 
-            final HttpRequest request = rb.build();
+        final HttpRequest request = rb.build();
 
-            // Hack until bug 9052131 gets resolved by Oracle.
-            makeInternalApiAccessible(request);
-            setHeaderMethod.invoke(request, "authorization", "bearer " + cachedJWTToken);
+        // Hack until bug 9052131 gets resolved by Oracle.
+        makeInternalApiAccessible(request);
+        setHeaderMethod.invoke(request, "authorization", "bearer " + cachedJWTToken);
+
+        return request;
+    }
+
+    @Override
+    public NotificationResponse push(Notification notification) {
+        try {
+            final HttpRequest request = buildRequest(notification);
 
             HttpResponse<String> response = client.send(request, BodyHandler.asString());
             return parseResponse(response);
