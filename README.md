@@ -8,7 +8,7 @@ Experimental support for Java 9, using the new HTTP/2 API.
 A Java library for sending notifications via APNs using Apple's new HTTP/2 API.
 This library only supports Java 9 and above.
 
-**NOTE:** You need to add --add-opens. See [https://github.com/CleverTap/apns-http2/wiki/Running-on-Java-9](here).
+**NOTE:** You need to add --add-opens. See [here](https://github.com/CleverTap/apns-http2/wiki/Running-on-Java-9).
 
 ## Installation
 - Clone this repository, and add it as a dependent maven project
