@@ -137,7 +137,8 @@ public class SyncApnsClient implements ApnsClient {
      * is set using HttpRequest, then it blissfully disregards it, as authorization
      * is a forbidden user header.
      * <p>
-     * We've filed bug 9052131 with Oracle, to allow setting the authorization header
+     * We've filed a bug (https://bugs.java.com/view_bug.do?bug_id=JDK-8194729)
+     * with Oracle, to allow setting the authorization header
      * outside the app. Until that gets resolved, we'll stick to reflection.
      * <p>
      * See https://github.com/CleverTap/apns-http2/wiki/Running-on-Java-9.
@@ -231,7 +232,7 @@ public class SyncApnsClient implements ApnsClient {
 
         final HttpRequest request = rb.build();
 
-        // Hack until bug 9052131 gets resolved by Oracle.
+        // Hack until bug https://bugs.java.com/view_bug.do?bug_id=JDK-8194729 gets resolved by Oracle.
         makeInternalApiAccessible(request);
         setHeaderMethod.invoke(request, "authorization", "bearer " + cachedJWTToken);
 
