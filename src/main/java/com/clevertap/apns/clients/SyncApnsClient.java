@@ -119,6 +119,7 @@ public class SyncApnsClient implements ApnsClient {
 
         this.client = httpClientBuilder
                 .version(HttpClient.Version.HTTP_2)
+                .sslContext(sslContext)
                 .build();
 
         this.defaultTopic = defaultTopic;
