@@ -2,6 +2,7 @@
 
 # WIP
 Experimental support for Java 9, using the new HTTP/2 API.
+**IMPORTANT:** This only works with Java 9.0.1, as from 9.0.4 onwards, the setSystemHeader API was removed (we accessed this method via reflection - see [here](https://github.com/CleverTap/apns-http2/wiki/Running-on-Java-9))
 
 [![Build Status](https://travis-ci.org/CleverTap/apns-http2.svg?branch=java9)](https://travis-ci.org/CleverTap/apns-http2)
 
