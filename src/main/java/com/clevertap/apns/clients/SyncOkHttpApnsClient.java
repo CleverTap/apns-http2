@@ -73,6 +73,22 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      */
     public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
                                 String defaultTopic, OkHttpClient.Builder clientBuilder) {
+        this(apnsAuthKey, teamID, keyID, production, defaultTopic, clientBuilder, 443);
+    }
+
+    /**
+     * Creates a new client which uses token authentication API.
+     *
+     * @param apnsAuthKey    The private key - exclude -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----
+     * @param teamID         The team ID
+     * @param keyID          The key ID (retrieved from the file name)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param clientBuilder  An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param connectionPort The port to establish a connection with APNs. Either 443 or 2197
+     */
+    public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
+                                String defaultTopic, OkHttpClient.Builder clientBuilder, int connectionPort) {
         this.apnsAuthKey = apnsAuthKey;
         this.teamID = teamID;
         this.keyID = keyID;
@@ -80,7 +96,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         this.defaultTopic = defaultTopic;
 
-        gateway = production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX;
+        gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
     }
 
     /**
@@ -103,11 +119,11 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * Creates a new client and automatically loads the key store
      * with the push certificate read from the input stream.
      *
-     * @param certificate   The client certificate to be used
-     * @param password      The password (if required, else null)
-     * @param production    Whether to use the production endpoint or the sandbox endpoint
-     * @param defaultTopic  A default topic (can be changed per message)
-     * @param builder An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param certificate  The client certificate to be used
+     * @param password     The password (if required, else null)
+     * @param production   Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic A default topic (can be changed per message)
+     * @param builder      An OkHttp client builder, possibly pre-initialized, to build the actual client
      * @throws UnrecoverableKeyException If the key cannot be recovered
      * @throws KeyManagementException    if the key failed to be loaded
      * @throws CertificateException      if any of the certificates in the keystore could not be loaded
@@ -118,6 +134,31 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, OkHttpClient.Builder builder)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+        this(certificate, password, production, defaultTopic, builder, 443);
+    }
+
+    /**
+     * Creates a new client and automatically loads the key store
+     * with the push certificate read from the input stream.
+     *
+     * @param certificate    The client certificate to be used
+     * @param password       The password (if required, else null)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param builder        An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param connectionPort The port to establish a connection with APNs. Either 443 or 2197
+     * @throws UnrecoverableKeyException If the key cannot be recovered
+     * @throws KeyManagementException    if the key failed to be loaded
+     * @throws CertificateException      if any of the certificates in the keystore could not be loaded
+     * @throws NoSuchAlgorithmException  if the algorithm used to check the integrity of the keystore cannot be found
+     * @throws IOException               if there is an I/O or format problem with the keystore data,
+     *                                   if a password is required but not given, or if the given password was incorrect
+     * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     */
+    public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
+                                String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException {
 
@@ -146,7 +187,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         client = builder.build();
 
         this.defaultTopic = defaultTopic;
-        gateway = production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX;
+        gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
     }
 
     /**
@@ -209,7 +250,6 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         final Notification.Priority priority = notification.getPriority();
         Request.Builder rb = new Request.Builder()
                 .url(gateway + "/3/device/" + notification.getToken())
-
                 .post(new RequestBody() {
                     @Override
                     public MediaType contentType() {
@@ -232,7 +272,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         }
 
         if (uuid != null) {
-            rb.header("apns-id",uuid.toString());
+            rb.header("apns-id", uuid.toString());
         }
 
         if (expiration > -1) {
@@ -240,7 +280,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         }
 
         if (priority != null) {
-            rb.header("apns-priority",String.valueOf(priority.getCode()));
+            rb.header("apns-priority", String.valueOf(priority.getCode()));
         }
 
         if (keyID != null && teamID != null && apnsAuthKey != null) {

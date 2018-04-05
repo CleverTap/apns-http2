@@ -51,6 +51,7 @@ public class ApnsClientBuilder {
     private InputStream certificate;
     private boolean production;
     private String password;
+    private int connectionPort = 443;
 
     private boolean asynchronous = false;
     private String defaultTopic = null;
@@ -89,6 +90,21 @@ public class ApnsClientBuilder {
      */
     public ApnsClientBuilder withOkHttpClientBuilder(OkHttpClient.Builder clientBuilder) {
         this.builder = clientBuilder;
+        return this;
+    }
+
+    /**
+     * APNs supports connections over ports 443 and 2197.
+     *
+     * @param port Either 443 or 2197
+     * @return the builder
+     */
+    public ApnsClientBuilder withPort(final int port) {
+        if (port != 443 && port != 2197) {
+            throw new IllegalArgumentException("APNs only supports ports 443 and 2197. Invalid port " + port);
+        }
+
+        this.connectionPort = port;
         return this;
     }
 
@@ -167,15 +183,15 @@ public class ApnsClientBuilder {
 
         if (certificate != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder);
+                return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
             } else {
-                return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder);
+                return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
             }
         } else if (keyID != null && teamID != null && apnsAuthKey != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+                return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
             } else {
-                return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+                return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
             }
         } else {
             throw new IllegalArgumentException("Either the token credentials (team ID, key ID, and the private key) " +
