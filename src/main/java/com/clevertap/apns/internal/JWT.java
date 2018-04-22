@@ -30,12 +30,13 @@
 
 package com.clevertap.apns.internal;
 
+import org.apache.commons.codec.binary.Base64;
+
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
 
 public final class JWT {
 
@@ -57,9 +58,9 @@ public final class JWT {
         final String header = "{\"alg\":\"ES256\",\"kid\":\"" + keyID + "\"}";
         final String payload = "{\"iss\":\"" + teamID + "\",\"iat\":" + now + "}";
 
-        final String part1 = Base64.getUrlEncoder().encodeToString(header.getBytes(StandardCharsets.UTF_8))
+        final String part1 = Base64.encodeBase64String(header.getBytes(StandardCharsets.UTF_8))
                 + "."
-                + Base64.getUrlEncoder().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
+                + Base64.encodeBase64String(payload.getBytes(StandardCharsets.UTF_8));
 
         return part1 + "." + ES256(secret, part1);
     }
@@ -79,7 +80,7 @@ public final class JWT {
             throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
 
         KeyFactory kf = KeyFactory.getInstance("EC");
-        KeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(secret.getBytes()));
+        KeySpec keySpec = new PKCS8EncodedKeySpec(Base64.decodeBase64(secret.getBytes()));
         PrivateKey key = kf.generatePrivate(keySpec);
 
         final Signature sha256withECDSA = Signature.getInstance("SHA256withECDSA");
@@ -88,6 +89,6 @@ public final class JWT {
         sha256withECDSA.update(data.getBytes(StandardCharsets.UTF_8));
 
         final byte[] signed = sha256withECDSA.sign();
-        return Base64.getUrlEncoder().encodeToString(signed);
+        return Base64.encodeBase64String(signed);
     }
 }
