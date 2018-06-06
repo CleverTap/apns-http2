@@ -198,6 +198,12 @@ public class Notification {
             alert.put("title", title);
             return this;
         }
+        
+        public Builder localizedMessage(String key,Object value) {
+        	alert.put("loc-key", key);
+        	alert.put("loc-args", value);
+        	return this;
+        }
 
         public Builder sound(String sound) {
             if (sound != null) {
