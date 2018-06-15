@@ -178,7 +178,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         SSLContext sslContext = SSLContext.getInstance("TLS");
 
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init((KeyStore) null);
+        tmf.init(ks);
         sslContext.init(keyManagers, tmf.getTrustManagers(), null);
 
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
