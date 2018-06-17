@@ -6,7 +6,7 @@
 
     <groupId>com.clevertap.apns</groupId>
     <artifactId>apns-http2</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 
     <name>apns-http2</name>
     <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.2.0</version>
+            <version>3.10.0</version>
         </dependency>
 
         <dependency>
