@@ -60,6 +60,13 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
         super(certificate, password, production, defaultTopic, connectionPool);
     }
 
+    public AsyncOkHttpApnsClient(InputStream certificate, String password, String gateway,
+                                 String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+        super(certificate, password, gateway, defaultTopic, builder, connectionPort);
+    }
+
     public AsyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID,
                                  boolean production, String defaultTopic, OkHttpClient.Builder builder) {
         this(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, 443);
@@ -68,6 +75,11 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
     public AsyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID,
                                  boolean production, String defaultTopic, OkHttpClient.Builder builder, int connectionPort) {
         super(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+    }
+
+    public AsyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, String gateway,
+                                 String defaultTopic, OkHttpClient.Builder builder, int connectionPort) {
+        super(apnsAuthKey, teamID, keyID, gateway, defaultTopic, builder, connectionPort);
     }
 
     public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,

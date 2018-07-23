@@ -89,6 +89,23 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      */
     public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
                                 String defaultTopic, OkHttpClient.Builder clientBuilder, int connectionPort) {
+        this (apnsAuthKey, teamID, keyID, production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX,
+                defaultTopic,clientBuilder, connectionPort);
+    }
+
+    /**
+     * Creates a new client which uses token authentication API.
+     *
+     * @param apnsAuthKey    The private key - exclude -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----
+     * @param teamID         The team ID
+     * @param keyID          The key ID (retrieved from the file name)
+     * @param gateway        Endpoint address
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param clientBuilder  An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param connectionPort The port to establish a connection with APNs. Either 443 or 2197
+     */
+    public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, String gateway,
+                                String defaultTopic, OkHttpClient.Builder clientBuilder, int connectionPort) {
         this.apnsAuthKey = apnsAuthKey;
         this.teamID = teamID;
         this.keyID = keyID;
@@ -96,7 +113,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         this.defaultTopic = defaultTopic;
 
-        gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
+        this.gateway = gateway + ":" + connectionPort;
     }
 
     /**
@@ -161,7 +178,6 @@ public class SyncOkHttpApnsClient implements ApnsClient {
                                 String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException {
-
         teamID = keyID = apnsAuthKey = null;
 
         password = password == null ? "" : password;
@@ -188,6 +204,57 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         this.defaultTopic = defaultTopic;
         gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
+    }
+
+    /**
+     * Creates a new client for custom endpoint and automatically loads the key store
+     * with the push certificate read from the input stream.
+     * Certificate will not be validated
+     *
+     * @param certificate    The client certificate to be used
+     * @param password       The password (if required, else null)
+     * @param gateway        Address of custom gateway.
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param builder        An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param connectionPort The port to establish a connection with APNs. Either 443 or 2197
+     * @throws UnrecoverableKeyException If the key cannot be recovered
+     * @throws KeyManagementException    if the key failed to be loaded
+     * @throws CertificateException      if any of the certificates in the keystore could not be loaded
+     * @throws NoSuchAlgorithmException  if the algorithm used to check the integrity of the keystore cannot be found
+     * @throws IOException               if there is an I/O or format problem with the keystore data,
+     *                                   if a password is required but not given, or if the given password was incorrect
+     * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     */
+
+    public SyncOkHttpApnsClient(InputStream certificate, String password, String gateway,
+                                String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+
+        teamID = keyID = apnsAuthKey = null;
+
+        password = password == null ? "" : password;
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(certificate, password.toCharArray());
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(ks, password.toCharArray());
+        KeyManager[] keyManagers = kmf.getKeyManagers();
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+
+        final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init((KeyStore) null);
+        sslContext.init(keyManagers, tmf.getTrustManagers(), null);
+
+        final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+        builder.sslSocketFactory(sslSocketFactory);
+
+        client = builder.build();
+
+        this.defaultTopic = defaultTopic;
+        this.gateway = gateway + ":" + connectionPort;
+
     }
 
     /**
