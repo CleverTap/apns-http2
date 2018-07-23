@@ -50,6 +50,10 @@ import java.util.concurrent.TimeUnit;
 public class ApnsClientBuilder {
     private InputStream certificate;
     private boolean production;
+    /**
+     * gateway field should be filled for development purposes only, and contain the address of local APNS mock instance.
+     */
+    private String customGateway;
     private String password;
     private int connectionPort = 443;
 
@@ -138,18 +142,25 @@ public class ApnsClientBuilder {
         return this;
     }
 
+    public ApnsClientBuilder withCustomGateway(String customGateway) {
+        this.customGateway = customGateway;
+        this.production = false;
+        return this;
+    }
+
     public ApnsClientBuilder withProductionGateway() {
+        this.customGateway = null;
         this.production = true;
         return this;
     }
 
     public ApnsClientBuilder withProductionGateway(boolean production) {
         if (production) return withProductionGateway();
-
         return withDevelopmentGateway();
     }
 
     public ApnsClientBuilder withDevelopmentGateway() {
+        this.customGateway = null;
         this.production = false;
         return this;
     }
@@ -183,15 +194,31 @@ public class ApnsClientBuilder {
 
         if (certificate != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
+                if (customGateway != null){
+                    return new AsyncOkHttpApnsClient(certificate, password, customGateway, defaultTopic, builder, connectionPort);
+                } else {
+                    return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
+                }
             } else {
-                return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
+                if (customGateway != null){
+                    return new SyncOkHttpApnsClient(certificate, password, customGateway, defaultTopic, builder, connectionPort);
+                } else {
+                    return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
+                }
             }
         } else if (keyID != null && teamID != null && apnsAuthKey != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
+                if (customGateway != null) {
+                    return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, customGateway, defaultTopic, builder, connectionPort);
+                } else {
+                    return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
+                }
             } else {
-                return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
+                if (customGateway != null) {
+                    return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, customGateway, defaultTopic, builder, connectionPort);
+                } else {
+                    return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
+                }
             }
         } else {
             throw new IllegalArgumentException("Either the token credentials (team ID, key ID, and the private key) " +
