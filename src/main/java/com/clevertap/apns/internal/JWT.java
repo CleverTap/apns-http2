@@ -54,7 +54,7 @@ public final class JWT {
      */
     public static String getToken(final String teamID, final String keyID, final String secret)
             throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        final int now = (int) (System.currentTimeMillis() / 1000);
+        final int now = (int) (System.currentTimeMillis() / 1000 / 1800 * 1800);
         final String header = "{\"alg\":\"ES256\",\"kid\":\"" + keyID + "\"}";
         final String payload = "{\"iss\":\"" + teamID + "\",\"iat\":" + now + "}";
 
