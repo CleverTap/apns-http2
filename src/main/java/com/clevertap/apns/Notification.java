@@ -30,9 +30,8 @@
 
 package com.clevertap.apns;
 
+import com.alibaba.fastjson.JSON;
 import com.clevertap.apns.clients.AsyncOkHttpApnsClient;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -65,7 +64,6 @@ public class Notification {
         }
     }
 
-
     /**
      * Constructs a new Notification with a payload and token.
      *
@@ -77,7 +75,8 @@ public class Notification {
      * @param priority   The priority of the notification (10 or 5)
      * @param uuid       A canonical UUID that identifies the notification
      */
-    protected Notification(String payload, String token, String topic, String collapseId, long expiration, Priority priority, UUID uuid) {
+    protected Notification(String payload, String token, String topic, String collapseId, long expiration,
+                           Priority priority, UUID uuid) {
         this.payload = payload;
         this.token = token;
         this.topic = topic;
@@ -139,7 +138,6 @@ public class Notification {
      * Builds a notification to be sent to APNS.
      */
     public static class Builder {
-        private final ObjectMapper mapper = new ObjectMapper();
 
         private final HashMap<String, Object> root, aps, alert;
         private final String token;
@@ -148,6 +146,7 @@ public class Notification {
         private long expiration = -1; // defaults to -1, as 0 is a valid value (included only if greater than -1)
         private Priority priority;
         private UUID uuid;
+        private String threadId;
 
         /**
          * Creates a new notification builder.
@@ -253,6 +252,36 @@ public class Notification {
             return this;
         }
 
+        /**
+         * according to: https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual
+         * /RemoteNotificationsPG/PayloadKeyReference.html#//apple_ref/doc/uid/TP40008194-CH17-SW1
+         *
+         * @param threadId
+         * @return
+         */
+        public Builder threadId(String threadId) {
+            aps.put("thread-id", threadId);
+            return this;
+        }
+
+        public Builder launchImage(String value) {
+            alert.put("launch-image", value);
+            return this;
+        }
+
+        /**
+         *
+         * Add some custome Object to root, for some costomer situation
+         *
+         * @param key
+         * @param obj
+         * @return
+         */
+        public Builder addRoot(String key, Object obj) {
+            this.root.put(key, obj);
+            return this;
+        }
+
         public int size() {
             try {
                 return build().getPayload().getBytes("UTF-8").length;
@@ -262,22 +291,16 @@ public class Notification {
         }
 
         /**
-         * Builds the notification.
-         * Also see {@link AsyncOkHttpApnsClient#push(Notification, NotificationResponseListener)}
+         * Builds the notification. Also see {@link AsyncOkHttpApnsClient#push(Notification,
+         * NotificationResponseListener)}
          *
          * @return The notification
          */
         public Notification build() {
             root.put("aps", aps);
             aps.put("alert", alert);
-
             final String payload;
-            try {
-                payload = mapper.writeValueAsString(root);
-            } catch (JsonProcessingException e) {
-                // Should not happen
-                throw new RuntimeException(e);
-            }
+            payload = JSON.toJSONString(root);
             return new Notification(payload, token, topic, collapseId, expiration, priority, uuid);
         }
     }
