@@ -223,6 +223,11 @@ public class Notification {
             return this;
         }
 
+        public Builder threadId(String threadId) {
+            aps.put("thread-id", threadId);
+            return this;
+        }
+
         public Builder customField(String key, Object value) {
             root.put(key, value);
             return this;
