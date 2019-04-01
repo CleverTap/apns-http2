@@ -190,7 +190,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
             throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
         }
         X509TrustManager trustManager = (X509TrustManager) trustManagers[0];
-        sslContext.init(null, new TrustManager[]{trustManager}, null);
+        sslContext.init(keyManagers, new TrustManager[]{trustManager}, null);
         builder.sslSocketFactory(sslSocketFactory, trustManager);
 
         client = builder.build();
@@ -317,6 +317,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         Response response = null;
 
         try {
+            
             response = client.newCall(request).execute();
             return parseResponse(response);
         } catch (Throwable t) {
