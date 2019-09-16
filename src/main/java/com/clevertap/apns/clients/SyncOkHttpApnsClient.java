@@ -261,7 +261,8 @@ public class SyncOkHttpApnsClient implements ApnsClient {
                         sink.write(notification.getPayload().getBytes(Constants.UTF_8));
                     }
                 })
-                .header("content-length", notification.getPayload().getBytes(Constants.UTF_8).length + "");
+                .header("content-length", notification.getPayload().getBytes(Constants.UTF_8).length + "")
+                .header("apns-push-type" ,"alert");
 
         if (topic != null) {
             rb.header("apns-topic", topic);
