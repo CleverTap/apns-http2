@@ -48,6 +48,7 @@ public class Notification {
     private final String collapseId;
     private final long expiration;
     private final Priority priority;
+    private final String pushType;
     private final UUID uuid;
 
     public enum Priority {
@@ -76,8 +77,10 @@ public class Notification {
      * @param expiration A UNIX epoch date expressed in seconds (UTC)
      * @param priority   The priority of the notification (10 or 5)
      * @param uuid       A canonical UUID that identifies the notification
+     * @param pushType   type of push to be sent (background/alert etc)
      */
-    protected Notification(String payload, String token, String topic, String collapseId, long expiration, Priority priority, UUID uuid) {
+    protected Notification(String payload, String token, String topic, String collapseId,
+        long expiration, Priority priority, UUID uuid, String pushType) {
         this.payload = payload;
         this.token = token;
         this.topic = topic;
@@ -85,6 +88,7 @@ public class Notification {
         this.expiration = expiration;
         this.priority = priority;
         this.uuid = uuid;
+        this.pushType = pushType;
     }
 
     /**
@@ -131,6 +135,10 @@ public class Notification {
         return priority;
     }
 
+    public String getPushType() {
+        return pushType;
+    }
+
     public UUID getUuid() {
         return uuid;
     }
@@ -148,6 +156,7 @@ public class Notification {
         private long expiration = -1; // defaults to -1, as 0 is a valid value (included only if greater than -1)
         private Priority priority;
         private UUID uuid;
+        private String pushType;
 
         /**
          * Creates a new notification builder.
@@ -253,6 +262,11 @@ public class Notification {
             return this;
         }
 
+        public Builder pushType(String pushType) {
+            this.pushType = pushType;
+            return this;
+        }
+
         public int size() {
             try {
                 return build().getPayload().getBytes("UTF-8").length;
@@ -262,8 +276,8 @@ public class Notification {
         }
 
         /**
-         * Builds the notification.
-         * Also see {@link AsyncOkHttpApnsClient#push(Notification, NotificationResponseListener)}
+         * Builds the notification. Also see {@link AsyncOkHttpApnsClient#push(Notification,
+         * NotificationResponseListener)}
          *
          * @return The notification
          */
@@ -278,7 +292,8 @@ public class Notification {
                 // Should not happen
                 throw new RuntimeException(e);
             }
-            return new Notification(payload, token, topic, collapseId, expiration, priority, uuid);
+            return new Notification(payload, token, topic, collapseId, expiration, priority, uuid,
+                pushType);
         }
     }
 }
