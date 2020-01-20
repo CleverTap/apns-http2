@@ -77,7 +77,7 @@ public class Notification {
      * @param expiration A UNIX epoch date expressed in seconds (UTC)
      * @param priority   The priority of the notification (10 or 5)
      * @param uuid       A canonical UUID that identifies the notification
-     * @param pushType   type of push to be sent (background/alert etc)
+     * @param pushType   Type of push to be sent (background/alert etc)
      */
     protected Notification(String payload, String token, String topic, String collapseId,
         long expiration, Priority priority, UUID uuid, String pushType) {
