@@ -248,6 +248,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         final UUID uuid = notification.getUuid();
         final long expiration = notification.getExpiration();
         final Notification.Priority priority = notification.getPriority();
+        final String pushType = notification.getPushType();
         Request.Builder rb = new Request.Builder()
                 .url(gateway + "/3/device/" + notification.getToken())
                 .post(new RequestBody() {
@@ -281,6 +282,10 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         if (priority != null) {
             rb.header("apns-priority", String.valueOf(priority.getCode()));
+        }
+
+        if (pushType != null) {
+            rb.header("apns-push-type", pushType);
         }
 
         if (keyID != null && teamID != null && apnsAuthKey != null) {

@@ -21,6 +21,13 @@ This is required until Java 9 is released, as Java 8 does not have native suppor
   <type>pom</type>
 </dependency>
 ```
+- Maven build steps
+```
+mvn package
+```
+The above command will create jars in ***target/*** directory. One out of those jar will be ***apns-http2-1.0.3-jar-with-dependencies.jar*** and ***apns-http2-1.0.3.jar***.
+
+
 - Gradle  
 ```
 compile 'com.clevertap.apns:apns-http2:1.0.3'
