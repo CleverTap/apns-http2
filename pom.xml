@@ -6,7 +6,7 @@
 
     <groupId>com.clevertap.apns</groupId>
     <artifactId>apns-http2</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.5</version>
 
     <name>apns-http2</name>
     <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
