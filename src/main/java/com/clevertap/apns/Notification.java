@@ -208,6 +208,11 @@ public class Notification {
             return this;
         }
 
+        public Builder urlArgs(String[] args) {
+            aps.put("url-args", args);
+            return this;
+        }
+
         public Builder sound(String sound) {
             if (sound != null) {
                 aps.put("sound", sound);
