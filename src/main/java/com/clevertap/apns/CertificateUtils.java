@@ -134,12 +134,6 @@ public class CertificateUtils {
         if (!cn.toLowerCase().contains("push") && !cn.toLowerCase().contains("voip")) {
             throw new CertificateException("Not a push certificate - " + cn);
         }
-
-        if (production && cn.toLowerCase().contains("apple development ios push services")) {
-            throw new CertificateEnvironmentMismatchException("Invalid environment for this certificate");
-        } else if (!production && cn.toLowerCase().contains("apple production ios push services")) {
-            throw new CertificateEnvironmentMismatchException("Invalid environment for this certificate");
-        }
     }
 
     /**
