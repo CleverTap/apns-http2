@@ -61,6 +61,8 @@ public class SyncOkHttpApnsClient implements ApnsClient {
     private long lastJWTTokenTS = 0;
     private String cachedJWTToken = null;
 
+    private boolean isVoip;
+
     /**
      * Creates a new client which uses token authentication API.
      *
@@ -171,6 +173,8 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         final X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
         CertificateUtils.validateCertificate(production, cert);
 
+        this.isVoip = CertificateUtils.checkIsVoipCertificate(cert);
+
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(ks, password.toCharArray());
         KeyManager[] keyManagers = kmf.getKeyManagers();
@@ -264,10 +268,6 @@ public class SyncOkHttpApnsClient implements ApnsClient {
                 })
                 .header("content-length", notification.getPayload().getBytes(Constants.UTF_8).length + "");
 
-        if (topic != null) {
-            rb.header("apns-topic", topic);
-        }
-
         if (collapseId != null) {
             rb.header("apns-collapse-id", collapseId);
         }
@@ -284,8 +284,21 @@ public class SyncOkHttpApnsClient implements ApnsClient {
             rb.header("apns-priority", String.valueOf(priority.getCode()));
         }
 
-        if (pushType != null) {
-            rb.header("apns-push-type", pushType);
+        if (this.isVoip) {
+            rb.header("apns-push-type", "voip");
+
+            if (topic != null) {
+                rb.header("apns-topic", topic + ".voip");
+            }
+        }
+        else {
+            if (topic != null) {
+                rb.header("apns-topic", topic);
+            }
+          
+            if (pushType != null) {
+                rb.header("apns-push-type", pushType);
+            }
         }
 
         if (keyID != null && teamID != null && apnsAuthKey != null) {

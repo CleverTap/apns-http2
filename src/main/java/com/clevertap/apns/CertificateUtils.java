@@ -119,7 +119,7 @@ public class CertificateUtils {
      * @param production  Validate the certificate environment, if required
      * @param certificate The certificate to be validated
      * @throws CertificateException When the certificate is not valid, or if it's expired,
-     *                              or if it's not a push certificate
+     *                              or if it's not a push or voip certificate
      */
     public static void validateCertificate(boolean production, X509Certificate certificate)
             throws CertificateException {
@@ -131,7 +131,7 @@ public class CertificateUtils {
         // Ensure that it's a push certificate
         final Map<String, String> stringStringMap = CertificateUtils.splitCertificateSubject(certificate.getSubjectDN().getName());
         final String cn = stringStringMap.get("CN");
-        if (!cn.toLowerCase().contains("push")) {
+        if (!cn.toLowerCase().contains("push") && !cn.toLowerCase().contains("voip")) {
             throw new CertificateException("Not a push certificate - " + cn);
         }
 
@@ -140,5 +140,22 @@ public class CertificateUtils {
         } else if (!production && cn.toLowerCase().contains("apple production ios push services")) {
             throw new CertificateEnvironmentMismatchException("Invalid environment for this certificate");
         }
+    }
+
+    /**
+     * Checks whether the given certificate is a 'voip' certificate
+     *
+     * @param certificate The certificate to be checked
+     * @throws CertificateException When the certificate is not valid, or if it's expired
+     */
+    public static boolean checkIsVoipCertificate(X509Certificate certificate)
+            throws CertificateException {
+        if (certificate == null) throw new CertificateException("Null certificate");
+
+        // Ensure that it's a push certificate
+        final Map<String, String> stringStringMap = CertificateUtils.splitCertificateSubject(certificate.getSubjectDN().getName());
+        final String cn = stringStringMap.get("CN");
+
+        return cn.toLowerCase().contains("voip");
     }
 }
