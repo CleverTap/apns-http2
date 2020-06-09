@@ -280,10 +280,6 @@ public class SyncOkHttpApnsClient implements ApnsClient {
             rb.header("apns-expiration", String.valueOf(expiration));
         }
 
-        if (priority != null) {
-            rb.header("apns-priority", String.valueOf(priority.getCode()));
-        }
-
         if (this.isVoip) {
             rb.header("apns-push-type", "voip");
 
@@ -298,6 +294,10 @@ public class SyncOkHttpApnsClient implements ApnsClient {
           
             if (pushType != null) {
                 rb.header("apns-push-type", pushType);
+            }
+
+            if (priority != null) {
+              rb.header("apns-priority", String.valueOf(priority.getCode()));
             }
         }
 

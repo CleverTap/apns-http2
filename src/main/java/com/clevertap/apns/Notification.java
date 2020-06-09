@@ -288,7 +288,11 @@ public class Notification {
          */
         public Notification build() {
             root.put("aps", aps);
-            aps.put("alert", alert);
+
+            //No need to add the alert if it's empty.
+            if (alert.size() > 0) {
+              aps.put("alert", alert);
+            }
 
             final String payload;
             try {
