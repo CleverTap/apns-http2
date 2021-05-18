@@ -179,7 +179,15 @@ public class SyncOkHttpApnsClient implements ApnsClient {
 
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init((KeyStore) null);
-        sslContext.init(keyManagers, tmf.getTrustManagers(), null);
+
+            // check if there is an existing TrustManager configured in the builder
+        TrustManager[] trustManagers = (builder.getX509TrustManagerOrNull$okhttp() != null) ?
+            new TrustManager[] {builder.getX509TrustManagerOrNull$okhttp()} : tmf.getTrustManagers();
+        sslContext.init(keyManagers, trustManagers, null);
+
+        if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+            throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
+        }
 
         TrustManager[] trustManagers = tmf.getTrustManagers();
         if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
