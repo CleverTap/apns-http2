@@ -117,8 +117,8 @@
 
     <distributionManagement>
 		<repository>
-			<id>gitam.sait-srv.local</id>
-			<url>https://gitam.sait-srv.local/api/v4/projects/134/packages/maven</url>
+			<id>maven.sait-srv.local</id>
+			<url>scp://vlx-svnam.sait-srv.local/maven</url>
 		</repository>
 	</distributionManagement>
 
