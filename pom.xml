@@ -38,6 +38,20 @@
         </dependency>
 
         <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-tls</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
@@ -105,12 +119,12 @@
     </build>
 
     <distributionManagement>
-        <repository>
+		<repository>
             <id>bintray-clevertap-Maven</id>
             <name>clevertap-Maven</name>
             <url>https://api.bintray.com/maven/clevertap/Maven/apns-http2/;publish=1</url>
         </repository>
-    </distributionManagement>
+	</distributionManagement>
 
     <scm>
         <connection>scm:git:git://github.com/CleverTap/apns-http2.git</connection>
