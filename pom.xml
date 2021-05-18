@@ -6,7 +6,7 @@
 
     <groupId>com.clevertap.apns</groupId>
     <artifactId>apns-http2</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.7-fix_jdk8u252</version>
 
     <name>apns-http2</name>
     <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
@@ -60,6 +60,17 @@
     </dependencies>
 
     <build>
+    <extensions>
+
+			<!-- Enabling the use of SSH -->
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>3.3.3</version>
+			</extension>
+
+		</extensions>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -119,12 +130,11 @@
     </build>
 
     <distributionManagement>
-        <repository>
-            <id>bintray-clevertap-Maven</id>
-            <name>clevertap-Maven</name>
-            <url>https://api.bintray.com/maven/clevertap/Maven/apns-http2/;publish=1</url>
-        </repository>
-    </distributionManagement>
+		<repository>
+			<id>gitam.sait-srv.local</id>
+			<url>https://gitam.sait-srv.local/api/v4/projects/134/packages/maven</url>
+		</repository>
+	</distributionManagement>
 
     <scm>
         <connection>scm:git:git://github.com/CleverTap/apns-http2.git</connection>
