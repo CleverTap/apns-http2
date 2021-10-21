@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,7 +20,13 @@ public class LocalHttpServer {
     String CONTEXT = "/serveRequest";
 
     public static int nextFreePort() {
-        return 45212;
+        try {
+            try (ServerSocket tempSocket = new ServerSocket(0)) {
+                return tempSocket.getLocalPort();
+            }
+        } catch (IOException e) {
+            return -1;
+        }
     }
 
     public int init() throws Exception {
