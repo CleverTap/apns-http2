@@ -181,26 +181,22 @@ public class SyncOkHttpApnsClientTest {
     }
 
     @Test
-    public void pushTestWithCertificateWithLocalHttpServer() {
-        try {
-            LocalHttpServer localHttpServer = new LocalHttpServer();
-            localHttpServer.init();
-            HttpUrl url = HttpUrl.parse(localHttpServer.getUrl());
-            ApnsClient client = buildClientWithCert();
-            setClientGatewayUrl(client, url);
+    public void pushTestWithCertificateWithLocalHttpServer() throws Exception {
+        LocalHttpServer localHttpServer = new LocalHttpServer();
+        localHttpServer.init();
+        HttpUrl url = HttpUrl.parse(localHttpServer.getUrl());
+        ApnsClient client = buildClientWithCert();
+        setClientGatewayUrl(client, url);
 
-            NotificationResponse response = client.push(
-                    new Notification.Builder(DEVICE_TOKEN)
-                            .alertBody("Notification Body")
-                            .alertTitle("Alert Title")
-                            .badge(10)
-                            .sound("sound")
-                            .build()
-            );
-            assertEquals("Server should be hit and should return 200", 200, response.getHttpStatusCode());
-            localHttpServer.shutDownServer();
-        } catch (Exception e) {
-            fail(e.toString());
-        }
+        NotificationResponse response = client.push(
+                new Notification.Builder(DEVICE_TOKEN)
+                        .alertBody("Notification Body")
+                        .alertTitle("Alert Title")
+                        .badge(10)
+                        .sound("sound")
+                        .build()
+        );
+        assertEquals("Server should be hit and should return 200", 200, response.getHttpStatusCode());
+        localHttpServer.shutDownServer();
     }
 }
