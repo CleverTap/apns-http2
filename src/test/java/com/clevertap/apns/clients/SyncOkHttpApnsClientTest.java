@@ -18,8 +18,8 @@ import com.clevertap.apns.LocalHttpServer;
 import com.clevertap.apns.Notification;
 import com.clevertap.apns.NotificationResponse;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -37,14 +37,14 @@ public class SyncOkHttpApnsClientTest {
     protected static final String DEVICE_TOKEN = "vaild-device-token";
     protected static final String INVALID_DEVICE_TOKEN = "invaild-device-token";
 
-    protected HeldCertificate rootCertificate;
-    protected HeldCertificate serverCertificate;
-    protected HeldCertificate clientCertificate;
-    protected HandshakeCertificates serverCertificateChain;
-    protected HandshakeCertificates clientCertificateChain;
+    protected static HeldCertificate rootCertificate;
+    protected static HeldCertificate serverCertificate;
+    protected static HeldCertificate clientCertificate;
+    protected static HandshakeCertificates serverCertificateChain;
+    protected static HandshakeCertificates clientCertificateChain;
 
-    @Before
-    public void initCertificates() {
+    @BeforeAll
+    public static void initCertificates() {
         rootCertificate = new HeldCertificate.Builder()
                 .certificateAuthority(0)
                 .build();
