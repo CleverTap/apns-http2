@@ -181,7 +181,7 @@ public class SyncOkHttpApnsClientTest {
     }
 
     @Test
-    public void pushTestWithCertificateWithLocalHttpServer() throws Exception {
+    public void pushTestWithCertificateWithLocalHttpServer() {
         try {
             LocalHttpServer localHttpServer = new LocalHttpServer();
             localHttpServer.init();
