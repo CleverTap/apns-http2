@@ -14,6 +14,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import com.clevertap.apns.ApnsClient;
+import com.clevertap.apns.LocalHttpServer;
 import com.clevertap.apns.Notification;
 import com.clevertap.apns.NotificationResponse;
 
@@ -176,6 +177,30 @@ public class SyncOkHttpApnsClientTest {
             server.close();
         } catch (IOException e) {
             fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void pushTestWithCertificateWithLocalHttpServer() throws Exception {
+        try {
+            LocalHttpServer localHttpServer = new LocalHttpServer();
+            localHttpServer.init();
+            HttpUrl url = HttpUrl.parse(localHttpServer.getUrl());
+            ApnsClient client = buildClientWithCert();
+            setClientGatewayUrl(client, url);
+
+            NotificationResponse response = client.push(
+                    new Notification.Builder(DEVICE_TOKEN)
+                            .alertBody("Notification Body")
+                            .alertTitle("Alert Title")
+                            .badge(10)
+                            .sound("sound")
+                            .build()
+            );
+            assertEquals("Server should be hit and should return 200", 200, response.getHttpStatusCode());
+            localHttpServer.shutDownServer();
+        } catch (Exception e) {
+            fail(e.toString());
         }
     }
 }
