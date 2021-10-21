@@ -120,20 +120,26 @@ public class SyncOkHttpApnsClientTest {
         }
     }
 
+
+
     /**
      * Build ApnsClient with valid client cert in synchronous mode.
      * @return apnsClient
      */
-    private ApnsClient buildClientWithCert() {
+    private ApnsClient buildClientWithCert(boolean withOkHttpClientBuilder) {
         try {
-            return new ApnsClientBuilder()
-                    .withOkHttpClientBuilder(new OkHttpClient.Builder().sslSocketFactory(clientCertificateChain.sslSocketFactory(), clientCertificateChain.trustManager()))
+            ApnsClientBuilder builder = new ApnsClientBuilder()
                     .withDefaultTopic(DEFAULT_TOPIC)
                     .withCertificate(getClientCertPKCS12())
                     .withPassword(CERT_PASSWD)
                     .inSynchronousMode()
-                    .withProductionGateway()
-                    .build();
+                    .withProductionGateway();
+
+            if (withOkHttpClientBuilder) {
+                builder.withOkHttpClientBuilder(new OkHttpClient.Builder().sslSocketFactory(clientCertificateChain.sslSocketFactory(), clientCertificateChain.trustManager()));
+            }
+
+            return builder.build();
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -141,14 +147,14 @@ public class SyncOkHttpApnsClientTest {
     }
 
     @Test
-    public void pushTestWithCert() {
+    void pushTestWithCert() {
         MockWebServer server = new MockWebServer();
         try {
             server.useHttps(serverCertificateChain.sslSocketFactory(), false);
             server.requestClientAuth();
             server.enqueue(new MockResponse().setResponseCode(200).setBody("Hello world!"));
 
-            ApnsClient client = buildClientWithCert();
+            ApnsClient client = buildClientWithCert(true);
             setClientGatewayUrl(client, server.url(""));
 
             NotificationResponse response = client.push(
@@ -181,11 +187,11 @@ public class SyncOkHttpApnsClientTest {
     }
 
     @Test
-    public void pushTestWithCertificateWithLocalHttpServer() throws Exception {
+    void pushTestWithCertificateWithLocalHttpServer() throws Exception {
         LocalHttpServer localHttpServer = new LocalHttpServer();
         localHttpServer.init();
         HttpUrl url = HttpUrl.parse(localHttpServer.getUrl());
-        ApnsClient client = buildClientWithCert();
+        ApnsClient client = buildClientWithCert(true);
         setClientGatewayUrl(client, url);
 
         NotificationResponse response = client.push(
@@ -197,6 +203,22 @@ public class SyncOkHttpApnsClientTest {
                         .build()
         );
         assertEquals("Server should be hit and should return 200", 200, response.getHttpStatusCode());
+
+        // Should have the same result as above if the trust manager isn't passed as well
+        client = buildClientWithCert(false);
+        setClientGatewayUrl(client, url);
+        response = client.push(
+                new Notification.Builder(DEVICE_TOKEN)
+                        .alertBody("Notification Body")
+                        .alertTitle("Alert Title")
+                        .badge(10)
+                        .sound("sound")
+                        .build()
+        );
+        assertEquals("Server should be hit and should return 200 without trust manager set", 200, response.getHttpStatusCode());
+
+
+
         localHttpServer.shutDownServer();
     }
 }
