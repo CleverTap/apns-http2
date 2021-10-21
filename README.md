@@ -1,6 +1,6 @@
 # apns-http2
 
-[![Build Status](https://travis-ci.org/CleverTap/apns-http2.svg?branch=master)](https://travis-ci.org/CleverTap/apns-http2)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=CleverTap_apns-http2&metric=coverage)](https://sonarcloud.io/dashboard?id=CleverTap_apns-http2) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=CleverTap_apns-http2&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=CleverTap_apns-http2)
 
 A Java library for sending notifications via APNS using Apple's new HTTP/2 API.
 This library uses OkHttp.
