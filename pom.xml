@@ -12,6 +12,12 @@
     <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
     <url>https://github.com/CleverTap/apns-http2</url>
 
+    <properties>
+        <sonar.organization>clevertap</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.projectKey>CleverTap_apns-http2</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
