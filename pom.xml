@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.clevertap.apns</groupId>
-    <artifactId>apns-http2</artifactId>
-    <version>1.0.7</version>
+    <artifactId>apns-http2-madlogic</artifactId>
+    <version>1.0.8</version>
 
-    <name>apns-http2</name>
+    <name>apns-http2-madlogic</name>
     <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
     <url>https://github.com/CleverTap/apns-http2</url>
 
@@ -129,7 +129,6 @@
                 </execution>
               </executions>
             </plugin>
-<!--        this plugin is for creating fat jar (jar with embedded dependencies).     -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -154,9 +153,9 @@
 
     <distributionManagement>
         <repository>
-            <id>bintray-clevertap-Maven</id>
-            <name>clevertap-Maven</name>
-            <url>https://api.bintray.com/maven/clevertap/Maven/apns-http2/;publish=1</url>
+          <id>madlogic-nexus</id>
+          <name>Madlogic-Nexus</name>
+          <url>https://nexus.sqoony.com/nexus/content/repositories/apns-http2-madlogic/</url>
         </repository>
     </distributionManagement>
 
