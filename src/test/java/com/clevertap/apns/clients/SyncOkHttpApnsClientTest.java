@@ -217,8 +217,6 @@ public class SyncOkHttpApnsClientTest {
         );
         assertEquals("Server should be hit and should return 200 without trust manager set", 200, response.getHttpStatusCode());
 
-
-
         localHttpServer.shutDownServer();
     }
 }
