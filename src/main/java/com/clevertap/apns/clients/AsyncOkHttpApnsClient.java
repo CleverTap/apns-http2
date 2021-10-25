@@ -33,6 +33,7 @@ package com.clevertap.apns.clients;
 import com.clevertap.apns.Notification;
 import com.clevertap.apns.NotificationResponse;
 import com.clevertap.apns.NotificationResponseListener;
+import com.clevertap.apns.exceptions.InvalidTrustManagerException;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
     public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                  String defaultTopic, ConnectionPool connectionPool)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
         super(certificate, password, production, defaultTopic, connectionPool);
     }
 
@@ -79,21 +80,21 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
     public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                  String defaultTopic, OkHttpClient.Builder builder)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
         this(certificate, password, production, defaultTopic, builder, 443);
     }
 
     public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                  String defaultTopic, OkHttpClient.Builder builder, int connectionPort, String gatewayUrl)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
         super(certificate, password, production, defaultTopic, builder, gatewayUrl);
     }
 
     public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                  String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
         this(certificate, password, production, defaultTopic, builder, 443, null);
     }
 
