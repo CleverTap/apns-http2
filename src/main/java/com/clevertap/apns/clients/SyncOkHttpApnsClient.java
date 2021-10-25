@@ -31,6 +31,7 @@
 package com.clevertap.apns.clients;
 
 import com.clevertap.apns.*;
+import com.clevertap.apns.exceptions.InvalidTrustManagerException;
 import com.clevertap.apns.internal.Constants;
 import com.clevertap.apns.internal.JWT;
 import okhttp3.*;
@@ -161,7 +162,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
 
         teamID = keyID = apnsAuthKey = null;
 
@@ -186,7 +187,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         sslContext.init(keyManagers, trustManagers, null);
 
         if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
-            throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
+            throw new InvalidTrustManagerException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
         }
 
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
