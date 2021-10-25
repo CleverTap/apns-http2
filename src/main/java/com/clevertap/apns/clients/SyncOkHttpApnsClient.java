@@ -378,6 +378,26 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         return builder;
     }
 
+    public String getDefaultTopic() {
+        return defaultTopic;
+    }
+
+    public String getApnsAuthKey() {
+        return apnsAuthKey;
+    }
+
+    public String getTeamID() {
+        return teamID;
+    }
+
+    public String getKeyID() {
+        return keyID;
+    }
+
+    public String getGateway() {
+        return gateway;
+    }
+
     @Override
     public boolean isSynchronous() {
         return true;

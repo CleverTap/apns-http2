@@ -1,31 +1,34 @@
 package com.clevertap.apns.clients;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.clevertap.apns.ApnsClient;
 import com.clevertap.apns.LocalHttpServer;
 import com.clevertap.apns.Notification;
 import com.clevertap.apns.NotificationResponse;
-
 import com.clevertap.apns.exceptions.InvalidTrustManagerException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
+import com.clevertap.apns.internal.Constants;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.tls.HandshakeCertificates;
 import okhttp3.tls.HeldCertificate;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 
 public class SyncOkHttpApnsClientTest {
@@ -71,56 +74,62 @@ public class SyncOkHttpApnsClientTest {
 
     /**
      * Convert client cert to PKCS12 Format and return as InputStream.
-     * @return
      */
-    protected InputStream getClientCertPKCS12() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-            KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
-            pkcs12.load(null, null);
-            Certificate chain[] = {clientCertificate.certificate()};
-            pkcs12.setKeyEntry("privatekeyalias", clientCertificate.keyPair().getPrivate(), CERT_PASSWD.toCharArray(), chain);
+    protected InputStream getClientCertPKCS12()
+            throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+        KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
+        pkcs12.load(null, null);
+        Certificate[] chain = {clientCertificate.certificate()};
+        pkcs12.setKeyEntry("privatekeyalias", clientCertificate.keyPair().getPrivate(),
+                CERT_PASSWD.toCharArray(), chain);
 
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            pkcs12.store(outStream, CERT_PASSWD.toCharArray());
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        pkcs12.store(outStream, CERT_PASSWD.toCharArray());
 
-            return new ByteArrayInputStream(outStream.toByteArray());
+        return new ByteArrayInputStream(outStream.toByteArray());
     }
 
 
     /**
      * Build ApnsClient with valid client cert in synchronous mode.
+     *
      * @return apnsClient
      */
-    private ApnsClient buildClientWithCert(boolean withOkHttpClientBuilder, String gatewayUrl) throws CertificateException,
+    private ApnsClient buildClientWithCert(boolean withOkHttpClientBuilder, String gatewayUrl)
+            throws CertificateException,
             UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, InvalidTrustManagerException {
-            ApnsClientBuilder builder = new ApnsClientBuilder()
-                    .withDefaultTopic(DEFAULT_TOPIC)
-                    .withCertificate(getClientCertPKCS12())
-                    .withPassword(CERT_PASSWD)
-                    .inSynchronousMode()
-                    .withProductionGateway();
+        ApnsClientBuilder builder = new ApnsClientBuilder()
+                .withDefaultTopic(DEFAULT_TOPIC)
+                .withCertificate(getClientCertPKCS12())
+                .withPassword(CERT_PASSWD)
+                .inSynchronousMode()
+                .withProductionGateway();
 
-            if (withOkHttpClientBuilder) {
-                builder.withOkHttpClientBuilder(new OkHttpClient.Builder().sslSocketFactory(clientCertificateChain.sslSocketFactory(), clientCertificateChain.trustManager()));
-            }
+        if (withOkHttpClientBuilder) {
+            builder.withOkHttpClientBuilder(new OkHttpClient.Builder().sslSocketFactory(
+                    clientCertificateChain.sslSocketFactory(),
+                    clientCertificateChain.trustManager()));
+        }
 
-            if (gatewayUrl != null) {
-                builder.withGatewayUrl(gatewayUrl);
-            }
+        if (gatewayUrl != null) {
+            builder.withGatewayUrl(gatewayUrl);
+        }
 
-            return builder.build();
+        return builder.build();
     }
 
     @Test
-    void pushTestWithCert() throws IOException, CertificateException, InterruptedException, UnrecoverableKeyException,
-            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, NoSuchFieldException, IllegalAccessException, InvalidTrustManagerException {
-        MockWebServer server = new MockWebServer();
-        try {
+    void pushTestWithCert()
+            throws IOException, CertificateException, InterruptedException, UnrecoverableKeyException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, InvalidTrustManagerException {
+        try (MockWebServer server = new MockWebServer()) {
             server.useHttps(serverCertificateChain.sslSocketFactory(), false);
             server.requestClientAuth();
             server.enqueue(new MockResponse().setResponseCode(200).setBody("Hello world!"));
 
             String url = server.url("").toString();
-            url = url.substring(0, url.length() - 1); // Above method gives a trailing "/" which we want to remove
+            url = url.substring(0,
+                    url.length() - 1); // Above method gives a trailing "/" which we want to remove
 
             ApnsClient client = buildClientWithCert(true, url);
 
@@ -132,17 +141,17 @@ public class SyncOkHttpApnsClientTest {
                             .sound("sound")
                             .build()
             );
-            assertEquals("HTTP-Response-Code 200", 200, response.getHttpStatusCode());
+            assertEquals(200, response.getHttpStatusCode());
 
             RecordedRequest request = server.takeRequest();
             assertEquals("/3/device/" + DEVICE_TOKEN, request.getPath());
             assertEquals(DEFAULT_TOPIC, request.getHeader("apns-topic"));
 
-            X509Certificate clientCert = (X509Certificate) request.getHandshake().peerCertificates().get(0);
-            X509Certificate clientChain[] = {clientCert};
+            assert request.getHandshake() != null;
+            X509Certificate clientCert = (X509Certificate) request.getHandshake().peerCertificates()
+                    .get(0);
+            X509Certificate[] clientChain = {clientCert};
             serverCertificateChain.trustManager().checkClientTrusted(clientChain, "RSA");
-        } finally {
-            server.close();
         }
     }
 
@@ -160,7 +169,8 @@ public class SyncOkHttpApnsClientTest {
                         .sound("sound")
                         .build()
         );
-        assertEquals("Server should be hit and should return 200", 200, response.getHttpStatusCode());
+        assertEquals(200, response.getHttpStatusCode(),
+                "Server should be hit and should return 200");
 
         // Should have the same result as above if the trust manager isn't passed as well
         client = buildClientWithCert(false, localHttpServer.getUrl());
@@ -172,8 +182,28 @@ public class SyncOkHttpApnsClientTest {
                         .sound("sound")
                         .build()
         );
-        assertEquals("Server should be hit and should return 200 without trust manager set", 200, response.getHttpStatusCode());
+        assertEquals(200, response.getHttpStatusCode(),
+                "Server should be hit and should return 200 without trust manager set");
 
         localHttpServer.shutDownServer();
+    }
+
+    @Test
+    void constructor() {
+        final SyncOkHttpApnsClient client = new SyncOkHttpApnsClient("authKey",
+                "teamID", "keyID", true, "defaultTopic", new Builder(), 443, "myGateway");
+
+        assertEquals("authKey", client.getApnsAuthKey());
+        assertEquals("teamID", client.getTeamID());
+        assertEquals("keyID", client.getKeyID());
+        assertEquals("defaultTopic", client.getDefaultTopic());
+        assertEquals("myGateway", client.getGateway());
+    }
+
+    @Test
+    void defaultGateway() {
+        final SyncOkHttpApnsClient client = new SyncOkHttpApnsClient("authKey",
+                "teamID", "keyID", true, "defaultTopic", new Builder(), 443, null);
+        assertEquals(Constants.ENDPOINT_PRODUCTION + ":443", client.getGateway());
     }
 }
