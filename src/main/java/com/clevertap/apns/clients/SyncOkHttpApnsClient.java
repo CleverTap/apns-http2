@@ -72,10 +72,44 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @param production    Whether to use the production endpoint or the sandbox endpoint
      * @param defaultTopic  A default topic (can be changed per message)
      * @param clientBuilder An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param gatewayUrl     The gateway url the APNS client should point to
      */
     public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
+                                String defaultTopic, OkHttpClient.Builder clientBuilder, String gatewayUrl) {
+        this(apnsAuthKey, teamID, keyID, production, defaultTopic, clientBuilder, 443, gatewayUrl);
+    }
+
+    public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
                                 String defaultTopic, OkHttpClient.Builder clientBuilder) {
-        this(apnsAuthKey, teamID, keyID, production, defaultTopic, clientBuilder, 443);
+        this(apnsAuthKey, teamID, keyID, production, defaultTopic, clientBuilder, 443, null);
+    }
+
+    /**
+     * Creates a new client which uses token authentication API.
+     *
+     * @param apnsAuthKey    The private key - exclude -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----
+     * @param teamID         The team ID
+     * @param keyID          The key ID (retrieved from the file name)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param clientBuilder  An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param connectionPort The port to establish a connection with APNs. Either 443 or 2197
+     * @param gatewayUrl     The gateway url the APNS client should point to
+     */
+    public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
+                                String defaultTopic, OkHttpClient.Builder clientBuilder, int connectionPort, String gatewayUrl) {
+        this.apnsAuthKey = apnsAuthKey;
+        this.teamID = teamID;
+        this.keyID = keyID;
+        client = clientBuilder.build();
+
+        this.defaultTopic = defaultTopic;
+
+        if (gatewayUrl == null) {
+            gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
+        } else {
+            gateway = gatewayUrl;
+        }
     }
 
     /**
@@ -91,14 +125,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      */
     public SyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID, boolean production,
                                 String defaultTopic, OkHttpClient.Builder clientBuilder, int connectionPort) {
-        this.apnsAuthKey = apnsAuthKey;
-        this.teamID = teamID;
-        this.keyID = keyID;
-        client = clientBuilder.build();
-
-        this.defaultTopic = defaultTopic;
-
-        gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
+        this(apnsAuthKey, teamID, keyID, production, defaultTopic, clientBuilder, connectionPort, null);
     }
 
     /**
@@ -138,7 +165,32 @@ public class SyncOkHttpApnsClient implements ApnsClient {
                                 String defaultTopic, OkHttpClient.Builder builder)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException {
-        this(certificate, password, production, defaultTopic, builder, 443);
+        this(certificate, password, production, defaultTopic, builder, 443, null);
+    }
+
+    /**
+     * Creates a new client and automatically loads the key store
+     * with the push certificate read from the input stream.
+     *
+     * @param certificate  The client certificate to be used
+     * @param password     The password (if required, else null)
+     * @param production   Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic A default topic (can be changed per message)
+     * @param builder      An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param gatewayUrl     The gateway url the APNS client should point to
+     * @throws UnrecoverableKeyException If the key cannot be recovered
+     * @throws KeyManagementException    if the key failed to be loaded
+     * @throws CertificateException      if any of the certificates in the keystore could not be loaded
+     * @throws NoSuchAlgorithmException  if the algorithm used to check the integrity of the keystore cannot be found
+     * @throws IOException               if there is an I/O or format problem with the keystore data,
+     *                                   if a password is required but not given, or if the given password was incorrect
+     * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     */
+    public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
+                                String defaultTopic, OkHttpClient.Builder builder, String gatewayUrl)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+        this(certificate, password, production, defaultTopic, builder, 443, gatewayUrl);
     }
 
     /**
@@ -151,6 +203,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @param defaultTopic   A default topic (can be changed per message)
      * @param builder        An OkHttp client builder, possibly pre-initialized, to build the actual client
      * @param connectionPort The port to establish a connection with APNs. Either 443 or 2197
+     * @param gatewayUrl     The gateway url the APNS client should point to
      * @throws UnrecoverableKeyException If the key cannot be recovered
      * @throws KeyManagementException    if the key failed to be loaded
      * @throws CertificateException      if any of the certificates in the keystore could not be loaded
@@ -160,7 +213,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
-                                String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
+                                String defaultTopic, OkHttpClient.Builder builder, int connectionPort, String gatewayUrl)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
 
@@ -197,7 +250,37 @@ public class SyncOkHttpApnsClient implements ApnsClient {
         client = builder.build();
 
         this.defaultTopic = defaultTopic;
-        gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
+
+        if (gatewayUrl == null) {
+            gateway = (production ? Constants.ENDPOINT_PRODUCTION : Constants.ENDPOINT_SANDBOX) + ":" + connectionPort;
+        } else {
+            gateway = gatewayUrl;
+        }
+    }
+
+    /**
+     * Creates a new client and automatically loads the key store
+     * with the push certificate read from the input stream.
+     *
+     * @param certificate    The client certificate to be used
+     * @param password       The password (if required, else null)
+     * @param production     Whether to use the production endpoint or the sandbox endpoint
+     * @param defaultTopic   A default topic (can be changed per message)
+     * @param builder        An OkHttp client builder, possibly pre-initialized, to build the actual client
+     * @param connectionPort The port to establish a connection with APNs. Either 443 or 2197
+     * @throws UnrecoverableKeyException If the key cannot be recovered
+     * @throws KeyManagementException    if the key failed to be loaded
+     * @throws CertificateException      if any of the certificates in the keystore could not be loaded
+     * @throws NoSuchAlgorithmException  if the algorithm used to check the integrity of the keystore cannot be found
+     * @throws IOException               if there is an I/O or format problem with the keystore data,
+     *                                   if a password is required but not given, or if the given password was incorrect
+     * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     */
+    public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
+                                String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
+            throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException,
+            KeyManagementException, IOException {
+        this(certificate, password, production, defaultTopic, builder, connectionPort, null);
     }
 
     /**

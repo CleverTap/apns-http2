@@ -1,16 +1,14 @@
 package com.clevertap.apns.clients;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.security.KeyStore;
+import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import com.clevertap.apns.ApnsClient;
@@ -21,7 +19,6 @@ import com.clevertap.apns.NotificationResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -75,8 +72,7 @@ public class SyncOkHttpApnsClientTest {
      * Convert client cert to PKCS12 Format and return as InputStream.
      * @return
      */
-    protected InputStream getClientCertPKCS12() {
-        try {
+    protected InputStream getClientCertPKCS12() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
             KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
             pkcs12.load(null, null);
             Certificate chain[] = {clientCertificate.certificate()};
@@ -86,48 +82,15 @@ public class SyncOkHttpApnsClientTest {
             pkcs12.store(outStream, CERT_PASSWD.toCharArray());
 
             return new ByteArrayInputStream(outStream.toByteArray());
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-        return null;
     }
-
-    /**
-     * Changes Gateway-URL of the ApnsClient instance to the given URL via reflection.
-     *
-     * @param client  ApnsClient instance which gatewayUrl shall be changed
-     * @param gatewayUrl  URL to set
-     */
-    protected void setClientGatewayUrl(ApnsClient client, HttpUrl gatewayUrl) {
-        try {
-            String url = gatewayUrl.toString();
-
-            // strip trailling slash
-            if (url.endsWith("/")) {
-                url = url.substring(0, url.length() - 1);
-            }
-
-            Field field = client.getClass().getDeclaredField("gateway");
-            field.setAccessible(true);
-
-            Field modifiers = Field.class.getDeclaredField("modifiers");
-            modifiers.setAccessible(true);
-            modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-            field.set(client, url);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
 
 
     /**
      * Build ApnsClient with valid client cert in synchronous mode.
      * @return apnsClient
      */
-    private ApnsClient buildClientWithCert(boolean withOkHttpClientBuilder) {
-        try {
+    private ApnsClient buildClientWithCert(boolean withOkHttpClientBuilder, String gatewayUrl) throws CertificateException,
+            UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
             ApnsClientBuilder builder = new ApnsClientBuilder()
                     .withDefaultTopic(DEFAULT_TOPIC)
                     .withCertificate(getClientCertPKCS12())
@@ -139,23 +102,26 @@ public class SyncOkHttpApnsClientTest {
                 builder.withOkHttpClientBuilder(new OkHttpClient.Builder().sslSocketFactory(clientCertificateChain.sslSocketFactory(), clientCertificateChain.trustManager()));
             }
 
+            if (gatewayUrl != null) {
+                builder.withGatewayUrl(gatewayUrl);
+            }
+
             return builder.build();
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-        return null;
     }
 
     @Test
-    void pushTestWithCert() {
+    void pushTestWithCert() throws IOException, CertificateException, InterruptedException, UnrecoverableKeyException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, NoSuchFieldException, IllegalAccessException {
         MockWebServer server = new MockWebServer();
         try {
             server.useHttps(serverCertificateChain.sslSocketFactory(), false);
             server.requestClientAuth();
             server.enqueue(new MockResponse().setResponseCode(200).setBody("Hello world!"));
 
-            ApnsClient client = buildClientWithCert(true);
-            setClientGatewayUrl(client, server.url(""));
+            String url = server.url("").toString();
+            url = url.substring(0, url.length() - 1); // Above method gives a trailing "/" which we want to remove
+
+            ApnsClient client = buildClientWithCert(true, url);
 
             NotificationResponse response = client.push(
                     new Notification.Builder(DEVICE_TOKEN)
@@ -174,15 +140,8 @@ public class SyncOkHttpApnsClientTest {
             X509Certificate clientCert = (X509Certificate) request.getHandshake().peerCertificates().get(0);
             X509Certificate clientChain[] = {clientCert};
             serverCertificateChain.trustManager().checkClientTrusted(clientChain, "RSA");
-
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-
-        try {
+        } finally {
             server.close();
-        } catch (IOException e) {
-            fail(e.getMessage());
         }
     }
 
@@ -190,9 +149,7 @@ public class SyncOkHttpApnsClientTest {
     void pushTestWithCertificateWithLocalHttpServer() throws Exception {
         LocalHttpServer localHttpServer = new LocalHttpServer();
         localHttpServer.init();
-        HttpUrl url = HttpUrl.parse(localHttpServer.getUrl());
-        ApnsClient client = buildClientWithCert(true);
-        setClientGatewayUrl(client, url);
+        ApnsClient client = buildClientWithCert(true, localHttpServer.getUrl());
 
         NotificationResponse response = client.push(
                 new Notification.Builder(DEVICE_TOKEN)
@@ -205,8 +162,7 @@ public class SyncOkHttpApnsClientTest {
         assertEquals("Server should be hit and should return 200", 200, response.getHttpStatusCode());
 
         // Should have the same result as above if the trust manager isn't passed as well
-        client = buildClientWithCert(false);
-        setClientGatewayUrl(client, url);
+        client = buildClientWithCert(false, localHttpServer.getUrl());
         response = client.push(
                 new Notification.Builder(DEVICE_TOKEN)
                         .alertBody("Notification Body")

@@ -66,8 +66,14 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
     }
 
     public AsyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID,
+                                 boolean production, String defaultTopic, OkHttpClient.Builder builder, int connectionPort,
+                                 String gatewayUrl) {
+        super(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, gatewayUrl);
+    }
+
+    public AsyncOkHttpApnsClient(String apnsAuthKey, String teamID, String keyID,
                                  boolean production, String defaultTopic, OkHttpClient.Builder builder, int connectionPort) {
-        super(apnsAuthKey, teamID, keyID, production, defaultTopic, builder);
+        this(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, 443, null);
     }
 
     public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
@@ -78,10 +84,17 @@ public class AsyncOkHttpApnsClient extends SyncOkHttpApnsClient {
     }
 
     public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
+                                 String defaultTopic, OkHttpClient.Builder builder, int connectionPort, String gatewayUrl)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+        super(certificate, password, production, defaultTopic, builder, gatewayUrl);
+    }
+
+    public AsyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                  String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException, UnrecoverableKeyException, KeyManagementException {
-        super(certificate, password, production, defaultTopic, builder);
+        this(certificate, password, production, defaultTopic, builder, 443, null);
     }
 
     @Override

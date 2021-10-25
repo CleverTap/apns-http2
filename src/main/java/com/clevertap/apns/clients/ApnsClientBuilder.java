@@ -52,6 +52,7 @@ public class ApnsClientBuilder {
     private boolean production;
     private String password;
     private int connectionPort = 443;
+    private String gatewayUrl;
 
     private boolean asynchronous = false;
     private String defaultTopic = null;
@@ -169,6 +170,11 @@ public class ApnsClientBuilder {
         return this;
     }
 
+    public ApnsClientBuilder withGatewayUrl(String url) {
+        this.gatewayUrl = url;
+        return this;
+    }
+
     public ApnsClient build() throws CertificateException,
             NoSuchAlgorithmException, KeyStoreException, IOException,
             UnrecoverableKeyException, KeyManagementException {
@@ -183,15 +189,15 @@ public class ApnsClientBuilder {
 
         if (certificate != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
+                return new AsyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort, gatewayUrl);
             } else {
-                return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort);
+                return new SyncOkHttpApnsClient(certificate, password, production, defaultTopic, builder, connectionPort, gatewayUrl);
             }
         } else if (keyID != null && teamID != null && apnsAuthKey != null) {
             if (asynchronous) {
-                return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
+                return new AsyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort, gatewayUrl);
             } else {
-                return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort);
+                return new SyncOkHttpApnsClient(apnsAuthKey, teamID, keyID, production, defaultTopic, builder, connectionPort, gatewayUrl);
             }
         } else {
             throw new IllegalArgumentException("Either the token credentials (team ID, key ID, and the private key) " +
