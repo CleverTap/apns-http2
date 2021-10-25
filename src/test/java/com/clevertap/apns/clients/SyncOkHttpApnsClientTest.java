@@ -16,6 +16,7 @@ import com.clevertap.apns.LocalHttpServer;
 import com.clevertap.apns.Notification;
 import com.clevertap.apns.NotificationResponse;
 
+import com.clevertap.apns.exceptions.InvalidTrustManagerException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -90,7 +91,7 @@ public class SyncOkHttpApnsClientTest {
      * @return apnsClient
      */
     private ApnsClient buildClientWithCert(boolean withOkHttpClientBuilder, String gatewayUrl) throws CertificateException,
-            UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+            UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, InvalidTrustManagerException {
             ApnsClientBuilder builder = new ApnsClientBuilder()
                     .withDefaultTopic(DEFAULT_TOPIC)
                     .withCertificate(getClientCertPKCS12())
@@ -111,7 +112,7 @@ public class SyncOkHttpApnsClientTest {
 
     @Test
     void pushTestWithCert() throws IOException, CertificateException, InterruptedException, UnrecoverableKeyException,
-            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, NoSuchFieldException, IllegalAccessException {
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, NoSuchFieldException, IllegalAccessException, InvalidTrustManagerException {
         MockWebServer server = new MockWebServer();
         try {
             server.useHttps(serverCertificateChain.sslSocketFactory(), false);

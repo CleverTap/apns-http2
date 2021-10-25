@@ -31,6 +31,7 @@
 package com.clevertap.apns.clients;
 
 import com.clevertap.apns.ApnsClient;
+import com.clevertap.apns.exceptions.InvalidTrustManagerException;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -177,7 +178,7 @@ public class ApnsClientBuilder {
 
     public ApnsClient build() throws CertificateException,
             NoSuchAlgorithmException, KeyStoreException, IOException,
-            UnrecoverableKeyException, KeyManagementException {
+            UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
 
         if (builder == null) {
             builder = createDefaultOkHttpClientBuilder();

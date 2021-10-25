@@ -160,11 +160,12 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @throws IOException               if there is an I/O or format problem with the keystore data,
      *                                   if a password is required but not given, or if the given password was incorrect
      * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     * @throws InvalidTrustManagerException if invalid default TrustManagers are found
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, OkHttpClient.Builder builder)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
         this(certificate, password, production, defaultTopic, builder, 443, null);
     }
 
@@ -185,11 +186,12 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @throws IOException               if there is an I/O or format problem with the keystore data,
      *                                   if a password is required but not given, or if the given password was incorrect
      * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     * @throws InvalidTrustManagerException if invalid default TrustManagers are found
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, OkHttpClient.Builder builder, String gatewayUrl)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
         this(certificate, password, production, defaultTopic, builder, 443, gatewayUrl);
     }
 
@@ -211,6 +213,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @throws IOException               if there is an I/O or format problem with the keystore data,
      *                                   if a password is required but not given, or if the given password was incorrect
      * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     * @throws InvalidTrustManagerException if invalid default TrustManagers are found
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, OkHttpClient.Builder builder, int connectionPort, String gatewayUrl)
@@ -275,11 +278,12 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @throws IOException               if there is an I/O or format problem with the keystore data,
      *                                   if a password is required but not given, or if the given password was incorrect
      * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     * @throws InvalidTrustManagerException if invalid default TrustManagers are found
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, OkHttpClient.Builder builder, int connectionPort)
             throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException,
-            KeyManagementException, IOException {
+            KeyManagementException, IOException, InvalidTrustManagerException {
         this(certificate, password, production, defaultTopic, builder, connectionPort, null);
     }
 
@@ -299,11 +303,12 @@ public class SyncOkHttpApnsClient implements ApnsClient {
      * @throws IOException               if there is an I/O or format problem with the keystore data,
      *                                   if a password is required but not given, or if the given password was incorrect
      * @throws KeyStoreException         if no Provider supports a KeyStoreSpi implementation for the specified type
+     * @throws InvalidTrustManagerException if invalid default TrustManagers are found
      */
     public SyncOkHttpApnsClient(InputStream certificate, String password, boolean production,
                                 String defaultTopic, ConnectionPool connectionPool)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException, UnrecoverableKeyException, KeyManagementException {
+            IOException, UnrecoverableKeyException, KeyManagementException, InvalidTrustManagerException {
 
         this(certificate, password, production, defaultTopic, getBuilder(connectionPool));
     }
