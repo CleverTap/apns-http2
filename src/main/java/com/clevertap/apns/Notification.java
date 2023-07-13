@@ -274,8 +274,13 @@ public class Notification {
             return this;
         }
 
+        /**
+         * if value is between 0 and 1 (inclusive) than it will be added to aps dictionary
+         */
         public Builder relevanceScore(double score) {
-            aps.put("relevance-score", score);
+            if (score >= 0 && score <= 1){
+                aps.put("relevance-score", score);
+            }
             return this;
         }
 
