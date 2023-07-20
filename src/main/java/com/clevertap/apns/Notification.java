@@ -276,7 +276,7 @@ public class Notification {
 
         /**
          * if value is between 0 and 1 (inclusive) than it will be added to aps dictionary
-         * @param score value between 0 and 1
+         * @param A value between 0 and 1, both inclusive
          */
         public Builder relevanceScore(double score) {
             if (score >= 0 && score <= 1){
