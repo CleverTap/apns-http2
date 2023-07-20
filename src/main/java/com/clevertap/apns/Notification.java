@@ -41,7 +41,8 @@ import java.util.UUID;
 
 /**
  * An entity containing the payload and the token.
- * Refer: <a href="https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/generating_a_remote_notification">docs</a>
+* <br>
+ * See <a href="https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/generating_a_remote_notification">here</a> for more information.
  */
 public class Notification {
     private final String payload;
