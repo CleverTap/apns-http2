@@ -1,6 +1,7 @@
 package com.clevertap.apns.enums;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,8 +25,8 @@ public enum InterruptionLevel {
         return value;
     }
 
-    private static final Map<String, InterruptionLevel> interruptionLevelMap = Arrays.stream(InterruptionLevel.values())
-            .collect(Collectors.toMap(InterruptionLevel::getValue, Function.identity()));
+    private static final Map<String, InterruptionLevel> interruptionLevelMap = Collections.unmodifiableMap(Arrays.stream(InterruptionLevel.values())
+            .collect(Collectors.toMap(InterruptionLevel::getValue, Function.identity())));
 
 
     public static InterruptionLevel get(String value) {

@@ -277,7 +277,7 @@ public class Notification {
 
         /**
          * Sets the relevance score for this notification.
-         * @param A value between 0 and 1, both inclusive
+         * @param score A value between 0 and 1, both inclusive
          */
         public Builder relevanceScore(double score) {
             if (score >= 0 && score <= 1){
