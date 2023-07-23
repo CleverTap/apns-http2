@@ -286,12 +286,23 @@ public class Notification {
             return this;
         }
 
+        public Builder resetRelevanceScore() {
+            aps.remove("relevance-score");
+            return this;
+        }
+
+        public Builder resetInterruptionLevel() {
+            aps.remove("interruption-level");
+            return this;
+        }
+
         public Builder interruptionLevel(InterruptionLevel interruptionLevel) {
             if (interruptionLevel != null) {
                 aps.put("interruption-level", interruptionLevel.getValue());
             }
             return this;
         }
+
 
         public int size() {
             try {
