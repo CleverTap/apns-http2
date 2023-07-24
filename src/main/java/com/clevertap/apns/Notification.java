@@ -31,6 +31,7 @@
 package com.clevertap.apns;
 
 import com.clevertap.apns.clients.AsyncOkHttpApnsClient;
+import com.clevertap.apns.enums.InterruptionLevel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -40,6 +41,8 @@ import java.util.UUID;
 
 /**
  * An entity containing the payload and the token.
+* <br>
+ * See <a href="https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/generating_a_remote_notification">here</a> for more information.
  */
 public class Notification {
     private final String payload;
@@ -271,6 +274,35 @@ public class Notification {
             this.pushType = pushType;
             return this;
         }
+
+        /**
+         * Sets the relevance score for this notification.
+         * @param score A value between 0 and 1, both inclusive
+         */
+        public Builder relevanceScore(double score) {
+            if (score >= 0 && score <= 1){
+                aps.put("relevance-score", score);
+            }
+            return this;
+        }
+
+        public Builder resetRelevanceScore() {
+            aps.remove("relevance-score");
+            return this;
+        }
+
+        public Builder resetInterruptionLevel() {
+            aps.remove("interruption-level");
+            return this;
+        }
+
+        public Builder interruptionLevel(InterruptionLevel interruptionLevel) {
+            if (interruptionLevel != null) {
+                aps.put("interruption-level", interruptionLevel.getValue());
+            }
+            return this;
+        }
+
 
         public int size() {
             try {
