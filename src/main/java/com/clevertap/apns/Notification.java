@@ -206,8 +206,53 @@ public class Notification {
             return this;
         }
 
+        public Builder alertLocKey(String locKey) {
+            alert.put("loc-key", locKey);
+            return this;
+        }
+
+        public Builder alertLocArgs(String[] locArgs) {
+            alert.put("loc-args", locArgs);
+            return this;
+        }
+
         public Builder alertTitle(String title) {
             alert.put("title", title);
+            return this;
+        }
+
+        public Builder alertTitleLocKey(String titleLocKey) {
+            alert.put("title-loc-key", titleLocKey);
+            return this;
+        }
+
+        public Builder alertTitleLocArgs(String[] titleLocArgs) {
+            alert.put("title-loc-args", titleLocArgs);
+            return this;
+        }
+
+        public Builder alertSubtitle(String subtitle) {
+            alert.put("subtitle", subtitle);
+            return this;
+        }
+
+        public Builder alertSubtitleLocKey(String subtitleLocKey) {
+            alert.put("subtitle-loc-key", subtitleLocKey);
+            return this;
+        }
+
+        public Builder alertSubtitleLocArgs(String[] subtitleLocArgs) {
+            alert.put("subtitle-loc-args", subtitleLocArgs);
+            return this;
+        }
+
+        public Builder actionLocKey(String actionLocKey) {
+            alert.put("action-loc-key", actionLocKey);
+            return this;
+        }
+
+        public Builder launchImage(String launchImage) {
+            alert.put("launch-image", launchImage);
             return this;
         }
 
@@ -303,6 +348,10 @@ public class Notification {
             return this;
         }
 
+        public Builder threadId(String threadId) {
+            aps.put("thread-id", threadId);
+            return this;
+        }
 
         public int size() {
             try {
