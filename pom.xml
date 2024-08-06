@@ -6,7 +6,7 @@
 
     <groupId>com.clevertap.apns</groupId>
     <artifactId>apns-http2</artifactId>
-    <version>2.1.0</version>
+    <version>3.0.0</version>
 
     <name>apns-http2</name>
     <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
-        <okhttp.version>4.8.1</okhttp.version>
+        <okhttp.version>5.0.0-alpha.14</okhttp.version>
     </properties>
 
     <dependencyManagement>
