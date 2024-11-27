@@ -264,7 +264,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
                 KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(ks, password.toCharArray());
         KeyManager[] keyManagers = kmf.getKeyManagers();
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
 
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance(
                 TrustManagerFactory.getDefaultAlgorithm());
