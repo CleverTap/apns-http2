@@ -50,6 +50,7 @@ import java.util.UUID;
 /**
  * A wrapper around OkHttp's http client to send out notifications using Apple's HTTP/2 API.
  */
+// NOSONAR
 public class SyncOkHttpApnsClient implements ApnsClient {
 
     private final String defaultTopic;
