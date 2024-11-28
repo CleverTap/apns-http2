@@ -6,7 +6,7 @@
 
     <groupId>com.clevertap.apns</groupId>
     <artifactId>apns-http2</artifactId>
-    <version>3.0.2</version>
+    <version>4.0.0</version>
 
     <name>apns-http2</name>
     <description>A library for communicating with the Apple Push Gateway in HTTP/2.</description>
@@ -212,6 +212,7 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
 
     <scm>
         <connection>scm:git:git://github.com/CleverTap/apns-http2.git</connection>
