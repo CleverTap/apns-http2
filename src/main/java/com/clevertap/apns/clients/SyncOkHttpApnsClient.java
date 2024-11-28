@@ -50,7 +50,8 @@ import java.util.UUID;
 /**
  * A wrapper around OkHttp's http client to send out notifications using Apple's HTTP/2 API.
  */
-public class SyncOkHttpApnsClient implements ApnsClient {
+// NOSONAR
+public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
 
     private final String defaultTopic;
     private final String apnsAuthKey;
@@ -264,7 +265,7 @@ public class SyncOkHttpApnsClient implements ApnsClient {
                 KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(ks, password.toCharArray());
         KeyManager[] keyManagers = kmf.getKeyManagers();
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
 
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance(
                 TrustManagerFactory.getDefaultAlgorithm());
