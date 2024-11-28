@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
-        <okhttp.version>5.0.0-alpha.14</okhttp.version>
+        <okhttp.version>4.8.1</okhttp.version>
     </properties>
 
     <dependencyManagement>
