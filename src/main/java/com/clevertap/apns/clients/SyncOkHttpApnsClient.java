@@ -267,8 +267,7 @@ public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
         kmf.init(ks, password.toCharArray());
         KeyManager[] keyManagers = kmf.getKeyManagers();
         SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
-        SSLParameters sslParameters = sslContext.getDefaultSSLParameters();
-        sslParameters.setProtocols(new String[] { "TLSv1.3" }); // Force TLS 1.3
+
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance(
                 TrustManagerFactory.getDefaultAlgorithm());
         tmf.init((KeyStore) null);
@@ -278,7 +277,8 @@ public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
                 new TrustManager[]{builder.getX509TrustManagerOrNull$okhttp()}
                 : tmf.getTrustManagers();
         sslContext.init(keyManagers, trustManagers, null);
-
+        SSLParameters sslParameters = sslContext.getDefaultSSLParameters();
+        sslParameters.setProtocols(new String[] { "TLSv1.3" }); // Force TLS 1.3
         if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
             throw new InvalidTrustManagerException(
                     "Unexpected default trust managers:" + Arrays.toString(trustManagers));
