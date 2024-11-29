@@ -45,6 +45,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 
 /**
@@ -276,7 +277,8 @@ public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
                 new TrustManager[]{builder.getX509TrustManagerOrNull$okhttp()}
                 : tmf.getTrustManagers();
         sslContext.init(keyManagers, trustManagers, null);
-
+        SSLParameters sslParameters = sslContext.getDefaultSSLParameters();
+        sslParameters.setProtocols(new String[] { "TLSv1.3" }); // Force TLS 1.3
         if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
             throw new InvalidTrustManagerException(
                     "Unexpected default trust managers:" + Arrays.toString(trustManagers));
@@ -285,8 +287,12 @@ public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustManagers[0]);
+        ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+                .tlsVersions(TlsVersion.TLS_1_3)
+                .build();
 
-        client = builder.build();
+
+        client = builder.connectionSpecs(Collections.singletonList(spec)).build();
 
         this.defaultTopic = defaultTopic;
 
