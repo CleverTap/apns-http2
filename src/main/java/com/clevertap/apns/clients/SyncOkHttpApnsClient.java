@@ -45,6 +45,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 
 /**
@@ -266,7 +267,8 @@ public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
         kmf.init(ks, password.toCharArray());
         KeyManager[] keyManagers = kmf.getKeyManagers();
         SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
-
+        SSLParameters sslParameters = sslContext.getDefaultSSLParameters();
+        sslParameters.setProtocols(new String[] { "TLSv1.3" }); // Force TLS 1.3
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance(
                 TrustManagerFactory.getDefaultAlgorithm());
         tmf.init((KeyStore) null);
@@ -285,8 +287,12 @@ public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustManagers[0]);
+        ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+                .tlsVersions(TlsVersion.TLS_1_3)
+                .build();
 
-        client = builder.build();
+
+        client = builder.connectionSpecs(Collections.singletonList(spec)).build();
 
         this.defaultTopic = defaultTopic;
 
