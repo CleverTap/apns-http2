@@ -515,6 +515,13 @@ public class SyncOkHttpApnsClient implements ApnsClient { // NOSONAR
         if (response.code() != 200) {
             error = NotificationRequestError.get(statusCode);
             contentBody = response.body() != null ? response.body().string() : null;
+        } else {
+            try (ResponseBody responseBody = response.body()) {
+                if (responseBody != null) {
+                    // Read the response into memory but don't use the content
+                    responseBody.source().skip(responseBody.contentLength());
+                }
+            }
         }
 
         return new NotificationResponse(error, statusCode, contentBody, null);
