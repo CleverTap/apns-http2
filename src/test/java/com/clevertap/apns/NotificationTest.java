@@ -6,6 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -102,6 +104,55 @@ class NotificationTest {
         builder.resetInterruptionLevel();
         Notification notification2 = builder.build();
         assertEquals("{\"aps\":{\"alert\":{}}}", notification2.getPayload());
+    }
+
+    @Test
+    void testThreadId() {
+        Notification notification = new Notification.Builder("token")
+            .threadId("tid123")
+            .build();
+        String payload = notification.getPayload();
+        assertTrue(payload.contains("\"thread-id\":\"tid123\""));
+        assertTrue(payload.contains("\"alert\":{}"));
+    }
+
+    @Test
+    void testStaleDate() {
+        Notification notification = new Notification.Builder("token")
+            .staleDate(987654321L)
+            .build();
+        String payload = notification.getPayload();
+        assertTrue(payload.contains("\"stale-date\":987654321"));
+        assertTrue(payload.contains("\"alert\":{}"));
+    }
+
+    @Test
+    void testSoundDictionary() {
+        Map<String, Object> soundDict = new HashMap<>();
+        soundDict.put("name", "my_sound");
+        soundDict.put("critical", 2);
+        Notification notification = new Notification.Builder("token")
+            .sound(soundDict)
+            .build();
+        String payload = notification.getPayload();
+        assertTrue(payload.contains("\"sound\":{"));
+        assertTrue(payload.contains("\"name\":\"my_sound\""));
+        assertTrue(payload.contains("\"critical\":2"));
+    }
+
+    @Test
+    void testAlertLocalization() {
+        Notification notification = new Notification.Builder("token")
+            .titleLocKey("LOC_KEY")
+            .titleLocArgs(new String[]{"arg1","arg2"})
+            .subtitleLocKey("SUB_KEY")
+            .subtitleLocArgs(new String[]{"sub1","sub2"})
+            .build();
+        String payload = notification.getPayload();
+        assertTrue(payload.contains("\"title-loc-key\":\"LOC_KEY\""));
+        assertTrue(payload.contains("\"title-loc-args\":[\"arg1\",\"arg2\"]"));
+        assertTrue(payload.contains("\"subtitle-loc-key\":\"SUB_KEY\""));
+        assertTrue(payload.contains("\"subtitle-loc-args\":[\"sub1\",\"sub2\"]"));
     }
 
 }

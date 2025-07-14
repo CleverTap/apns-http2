@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -303,6 +304,169 @@ public class Notification {
             return this;
         }
 
+        // sound dictionary support
+        @SuppressWarnings("unchecked")
+        private HashMap<String, Object> getOrCreateSoundMap() {
+            Object existing = aps.get("sound");
+            if (existing instanceof HashMap) {
+                return (HashMap<String, Object>) existing;
+            }
+            return new HashMap<>();
+        }
+
+        public Builder sound(Map<String, Object> soundDict) {
+            if (soundDict != null) {
+                aps.put("sound", soundDict);
+            } else {
+                aps.remove("sound");
+            }
+            return this;
+        }
+
+        public Builder soundCritical(int critical) {
+            HashMap<String, Object> map = getOrCreateSoundMap();
+            map.put("critical", critical);
+            aps.put("sound", map);
+            return this;
+        }
+
+        public Builder soundName(String name) {
+            HashMap<String, Object> map = getOrCreateSoundMap();
+            if (name != null) {
+                map.put("name", name);
+            } else {
+                map.remove("name");
+            }
+            aps.put("sound", map);
+            return this;
+        }
+
+        public Builder soundVolume(double volume) {
+            HashMap<String, Object> map = getOrCreateSoundMap();
+            map.put("volume", volume);
+            aps.put("sound", map);
+            return this;
+        }
+
+        // alert dictionary keys
+        public Builder subtitle(String subtitle) {
+            alert.put("subtitle", subtitle);
+            return this;
+        }
+
+        public Builder launchImage(String launchImage) {
+            alert.put("launch-image", launchImage);
+            return this;
+        }
+
+        public Builder titleLocKey(String key) {
+            alert.put("title-loc-key", key);
+            return this;
+        }
+
+        public Builder titleLocArgs(String[] args) {
+            alert.put("title-loc-args", args);
+            return this;
+        }
+
+        public Builder subtitleLocKey(String key) {
+            alert.put("subtitle-loc-key", key);
+            return this;
+        }
+
+        public Builder subtitleLocArgs(String[] args) {
+            alert.put("subtitle-loc-args", args);
+            return this;
+        }
+
+        public Builder locKey(String key) {
+            alert.put("loc-key", key);
+            return this;
+        }
+
+        public Builder locArgs(String[] args) {
+            alert.put("loc-args", args);
+            return this;
+        }
+
+        // additional APS headers
+        public Builder threadId(String threadId) {
+            if (threadId != null) {
+                aps.put("thread-id", threadId);
+            } else {
+                aps.remove("thread-id");
+            }
+            return this;
+        }
+
+        public Builder targetContentId(String id) {
+            if (id != null) {
+                aps.put("target-content-id", id);
+            } else {
+                aps.remove("target-content-id");
+            }
+            return this;
+        }
+
+        public Builder filterCriteria(String criteria) {
+            if (criteria != null) {
+                aps.put("filter-criteria", criteria);
+            } else {
+                aps.remove("filter-criteria");
+            }
+            return this;
+        }
+
+        public Builder staleDate(long date) {
+            aps.put("stale-date", date);
+            return this;
+        }
+
+        public Builder contentState(Map<String, Object> state) {
+            if (state != null) {
+                aps.put("content-state", state);
+            } else {
+                aps.remove("content-state");
+            }
+            return this;
+        }
+
+        public Builder timestamp(long ts) {
+            aps.put("timestamp", ts);
+            return this;
+        }
+
+        public Builder event(String event) {
+            if (event != null) {
+                aps.put("event", event);
+            } else {
+                aps.remove("event");
+            }
+            return this;
+        }
+
+        public Builder dismissalDate(long date) {
+            aps.put("dismissal-date", date);
+            return this;
+        }
+
+        public Builder attributesType(String type) {
+            if (type != null) {
+                aps.put("attributes-type", type);
+            } else {
+                aps.remove("attributes-type");
+            }
+            return this;
+        }
+
+        public Builder attributes(Map<String, Object> attrs) {
+            if (attrs != null) {
+                aps.put("attributes", attrs);
+            } else {
+                aps.remove("attributes");
+            }
+            return this;
+        }
 
         public int size() {
             try {
